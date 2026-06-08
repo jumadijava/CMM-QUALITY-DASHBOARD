@@ -152,8 +152,18 @@ class DiagnosticPage:
           padding:6px 14px 14px !important;
         }
         details summary { position: static !important; }
+        /* ── Selectbox putih (override global abu-abu) ── */
+        div[data-testid="stSelectbox"] > div[data-baseweb="select"] > div {
+          background:#FFFFFF !important;
+          border:1px solid #E2E8F0 !important;
+          border-radius:8px !important;
+          min-height:38px !important;
+        }
+        div[data-testid="stSelectbox"] > div[data-baseweb="select"] > div:hover {
+          border-color:#CBD5E1 !important;
+        }
         div[data-baseweb="select"] > div{
-          background:#F1F5F9 !important;
+          background:#FFFFFF !important;
           border:1px solid #E2E8F0 !important;
           border-radius:8px !important;
           min-height:38px !important;
@@ -226,7 +236,6 @@ class DiagnosticPage:
             cat_vals = sorted(df["Category"].dropna().unique().tolist()) if "Category" in df.columns else ["Produksi", "QIS"]
             cat_default_val = "Produksi" if "Produksi" in cat_vals else cat_vals[0] if cat_vals else "All"
             cat_opts = ["All"] + cat_vals
-            # reset state kalau nilainya tidak valid
             if st.session_state.get("diag_cat_sel") not in cat_opts:
                 st.session_state["diag_cat_sel"] = cat_default_val
             f_cat = st.selectbox(
@@ -260,8 +269,10 @@ class DiagnosticPage:
         if f_cat != "All" and "Category" in df_base.columns:
             df_base = df_base[df_base["Category"] == f_cat]
 
-        # ── BARIS 2: Part·Model (combo) | Ref/Point | Parameter ───────
-        # Combo Part · Model — dinamis dari df_base (sudah filter cat)
+        # ── BARIS 2: Part·Model | SampleNo | Ref/Point | Parameter ───
+        # Cascade: cat → combo → sampleno → ref → param
+
+        # Combo Part · Model
         combos_df = (
             df_base[["PartName", "ModelName"]]
             .dropna().drop_duplicates()
@@ -270,51 +281,62 @@ class DiagnosticPage:
         combo_opts = ["— All Part & Model —"] + [
             f"{r.PartName} · {r.ModelName}" for _, r in combos_df.iterrows()
         ]
-        cur_combo = st.session_state.get("diag_combo_sel", "— All Part & Model —")
-        if cur_combo not in combo_opts:
+        if st.session_state.get("diag_combo_sel") not in combo_opts:
             st.session_state["diag_combo_sel"] = "— All Part & Model —"
 
-        # Ref/Point options — dinamis dari combo yang dipilih
-        df_for_ref = df_base.copy()
+        # df setelah combo terpilih (untuk downstream options)
         cur_combo_val = st.session_state.get("diag_combo_sel", "— All Part & Model —")
+        df_after_combo = df_base.copy()
         if cur_combo_val != "— All Part & Model —":
-            parts_split = cur_combo_val.split(" · ", 1)
-            if len(parts_split) == 2:
-                df_for_ref = df_base[
-                    (df_base["PartName"] == parts_split[0]) &
-                    (df_base["ModelName"] == parts_split[1])
+            _sp = cur_combo_val.split(" · ", 1)
+            if len(_sp) == 2:
+                df_after_combo = df_base[
+                    (df_base["PartName"] == _sp[0]) &
+                    (df_base["ModelName"] == _sp[1])
                 ]
 
-        param_col = "point" if "point" in df_for_ref.columns else "Parameter"
-        ref_col   = "ref"   if "ref"   in df_for_ref.columns else "ID"
+        # SampleNo — dinamis dari combo
+        sno_vals = sorted(
+            df_after_combo["SampleNo"].dropna().astype(str).unique().tolist(),
+            key=lambda s: (0, int(s)) if s.isdigit() else (1, s)
+        )
+        sno_opts = ["All"] + sno_vals
+        if st.session_state.get("diag_sno_sel") not in sno_opts:
+            st.session_state["diag_sno_sel"] = "All"
 
-        ref_vals  = sorted([
-            r for r in df_for_ref[ref_col].dropna().astype(str).unique()
+        # df setelah sampleno terpilih
+        cur_sno = st.session_state.get("diag_sno_sel", "All")
+        df_after_sno = df_after_combo.copy()
+        if cur_sno != "All":
+            df_after_sno = df_after_combo[df_after_combo["SampleNo"].astype(str) == cur_sno]
+
+        # Ref / Point — dinamis dari sampleno
+        param_col = "point" if "point" in df_after_sno.columns else "Parameter"
+        ref_col   = "ref"   if "ref"   in df_after_sno.columns else "ID"
+
+        ref_vals = sorted([
+            r for r in df_after_sno[ref_col].dropna().astype(str).unique()
             if r.strip() not in ("", "-", "nan")
         ])
-        ref_opts  = ["All"] + ref_vals
-
-        # Parameter options — dinamis dari ref yang dipilih
-        cur_ref = st.session_state.get("diag_ref_sel", "All")
-        if cur_ref not in ref_opts:
+        ref_opts = ["All"] + ref_vals
+        if st.session_state.get("diag_ref_sel") not in ref_opts:
             st.session_state["diag_ref_sel"] = "All"
-            cur_ref = "All"
 
-        df_for_param = df_for_ref.copy()
+        # Parameter — dinamis dari ref
+        cur_ref = st.session_state.get("diag_ref_sel", "All")
+        df_after_ref = df_after_sno.copy()
         if cur_ref != "All":
-            df_for_param = df_for_ref[df_for_ref[ref_col].astype(str) == cur_ref]
+            df_after_ref = df_after_sno[df_after_sno[ref_col].astype(str) == cur_ref]
 
         param_vals = sorted([
-            p for p in df_for_param[param_col].dropna().astype(str).unique()
+            p for p in df_after_ref[param_col].dropna().astype(str).unique()
             if p.strip() not in ("", "-", "nan")
         ])
         param_opts = ["All"] + param_vals
-
-        cur_param = st.session_state.get("diag_param_sel", "All")
-        if cur_param not in param_opts:
+        if st.session_state.get("diag_param_sel") not in param_opts:
             st.session_state["diag_param_sel"] = "All"
 
-        col_r2 = st.columns([2, 1.2, 1.8], gap="small")
+        col_r2 = st.columns([2, 1, 1.2, 1.8], gap="small")
         with col_r2[0]:
             f_combo = st.selectbox(
                 "Part · Model", combo_opts,
@@ -322,12 +344,18 @@ class DiagnosticPage:
                 label_visibility="collapsed",
             )
         with col_r2[1]:
+            f_sno = st.selectbox(
+                "Sample No", sno_opts,
+                key="diag_sno_sel",
+                label_visibility="collapsed",
+            )
+        with col_r2[2]:
             f_ref = st.selectbox(
                 "Ref / Point", ref_opts,
                 key="diag_ref_sel",
                 label_visibility="collapsed",
             )
-        with col_r2[2]:
+        with col_r2[3]:
             f_param = st.selectbox(
                 "Parameter", param_opts,
                 key="diag_param_sel",
@@ -354,16 +382,20 @@ class DiagnosticPage:
         if f_kp == "KP Only" and "KP" in df_out.columns:
             df_out = df_out[df_out["KP"].astype(str) == "1"]
 
-        # Part · Model (dari combo)
+        # Part · Model
         f_part, f_model = "All", "All"
         if f_combo != "— All Part & Model —":
-            parts_split = f_combo.split(" · ", 1)
-            if len(parts_split) == 2:
-                f_part, f_model = parts_split[0], parts_split[1]
+            _sp = f_combo.split(" · ", 1)
+            if len(_sp) == 2:
+                f_part, f_model = _sp[0], _sp[1]
                 df_out = df_out[
                     (df_out["PartName"] == f_part) &
                     (df_out["ModelName"] == f_model)
                 ]
+
+        # SampleNo
+        if f_sno != "All":
+            df_out = df_out[df_out["SampleNo"].astype(str) == f_sno]
 
         # Ref / Point
         if f_ref != "All":
@@ -652,19 +684,22 @@ class DiagnosticPage:
 
     # ── Helper: filter rcs sesuai filter pills ─────────────────────
     def _filter_rcs(self, rcs: list) -> list:
-        """Apply filter selectbox (time/shift/part/model) ke list root causes."""
+        """Apply semua filter selectbox ke list root causes (Analytics & Riwayat)."""
         from datetime import date, datetime, timedelta
 
         f_time  = st.session_state.get("diag_time_sel",  "All")
         f_shift = st.session_state.get("diag_shift_sel", "All Shift")
         f_combo = st.session_state.get("diag_combo_sel", "— All Part & Model —")
+        f_sno   = st.session_state.get("diag_sno_sel",   "All")
+        f_ref   = st.session_state.get("diag_ref_sel",   "All")
+        f_param = st.session_state.get("diag_param_sel", "All")
 
         # pecah combo → part & model
         f_part, f_model = "All", "All"
         if f_combo and f_combo != "— All Part & Model —":
-            parts_split = f_combo.split(" · ", 1)
-            if len(parts_split) == 2:
-                f_part, f_model = parts_split[0], parts_split[1]
+            _sp = f_combo.split(" · ", 1)
+            if len(_sp) == 2:
+                f_part, f_model = _sp[0], _sp[1]
 
         today = date.today()
         if f_time == "Today":
@@ -696,6 +731,12 @@ class DiagnosticPage:
             if f_part != "All" and r.get("part", "") != f_part:
                 continue
             if f_model != "All" and r.get("model", "") != f_model:
+                continue
+            if f_sno != "All" and str(r.get("sampleno", "")) != f_sno:
+                continue
+            if f_ref != "All" and str(r.get("ref", "")) != f_ref:
+                continue
+            if f_param != "All" and str(r.get("parameter", "")) != f_param:
                 continue
             out.append(r)
         return out
@@ -753,10 +794,13 @@ class DiagnosticPage:
         t     = st.session_state.get("diag_time_sel",  "All")
         s     = st.session_state.get("diag_shift_sel", "All Shift")
         combo = st.session_state.get("diag_combo_sel", "— All Part & Model —")
+        sno   = st.session_state.get("diag_sno_sel",   "All")
+        ref   = st.session_state.get("diag_ref_sel",   "All")
+        param = st.session_state.get("diag_param_sel", "All")
         TTL   = 300
 
         # Cache RC stats + TTL
-        stats_key = f"diag_stats_{t}_{s}_{combo}"
+        stats_key = f"diag_stats_{t}_{s}_{combo}_{sno}_{ref}_{param}"
         ts_key    = f"{stats_key}_ts"
         dirty     = st.session_state.pop("diag_rc_dirty", False)
         if stats_key not in st.session_state or dirty or \
@@ -766,7 +810,7 @@ class DiagnosticPage:
             st.session_state[ts_key]    = _time.time()
 
         # Cache Shift x Param dari data aktual + TTL
-        sp_key    = f"diag_sp_{t}_{s}_{combo}"
+        sp_key    = f"diag_sp_{t}_{s}_{combo}_{sno}_{ref}_{param}"
         sp_ts_key = f"{sp_key}_ts"
         if sp_key not in st.session_state or \
            _time.time() - st.session_state.get(sp_ts_key, 0) > TTL:
