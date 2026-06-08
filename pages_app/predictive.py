@@ -139,6 +139,47 @@ def _build_kendali_history(df_all: pd.DataFrame) -> pd.DataFrame:
 
 
 # ─────────────────────────────────────────────────────────────────
+#  Helper: load ilustrasi rule SPC sebagai base64
+# ─────────────────────────────────────────────────────────────────
+import base64 as _b64_spc
+from pathlib import Path as _SpcPath
+
+_SPC_RULE_IMG_DIR = _SpcPath("assets/ilustrasi")
+
+# Daftar nama file ilustrasi per rule — isi sesuai file yang tersedia
+_RULE_IMG_FILES = {
+    1: "spc_rule_1.jpg",
+    2: "spc_rule_2.jpg",
+    3: "spc_rule_3.jpg",
+    4: "spc_rule_4.jpg",
+    5: "spc_rule_5.jpg",
+    6: "spc_rule_6.jpg",
+    7: "spc_rule_7.jpg",
+}
+_RULE_IMG_CACHE: dict = {}
+
+def _get_rule_img_html(r_num: int, border_clr: str) -> str:
+    """Return <img> tag base64 atau placeholder teks kalau file tidak ada."""
+    if r_num in _RULE_IMG_CACHE:
+        return _RULE_IMG_CACHE[r_num]
+    fname = _RULE_IMG_FILES.get(r_num, "")
+    path  = _SPC_RULE_IMG_DIR / fname if fname else None
+    if path and path.exists():
+        ext  = path.suffix.lower()
+        mime = "image/png" if ext == ".png" else "image/jpeg"
+        b64  = _b64_spc.b64encode(path.read_bytes()).decode()
+        html = (f'<img src="data:{mime};base64,{b64}" '
+                f'style="max-width:100%;max-height:78px;object-fit:contain;" '
+                f'alt="Rule {r_num}"/>')
+    else:
+        html = (f'<span style="font-size:10px;color:#CBD5E1;">'
+                f'📷 Rule {r_num} — tempatkan file <b>{fname or "spc_rule_"+str(r_num)+".jpg"}</b>'
+                f' di folder assets/ilustrasi/</span>')
+    _RULE_IMG_CACHE[r_num] = html
+    return html
+
+
+# ─────────────────────────────────────────────────────────────────
 #  Page Class
 # ─────────────────────────────────────────────────────────────────
 class PredictivePage:
@@ -620,6 +661,30 @@ class PredictivePage:
         if st.session_state.get("cls_sno") not in sno_cls_opts:
             st.session_state["cls_sno"] = "Semua Sample"
 
+        # ── KP → ref → param (cascade dari sno) ──────────────
+        cur_cls_sno = st.session_state.get("cls_sno", "Semua Sample")
+        df_cls_sno  = df_cls_cat[df_cls_cat["SampleNo"].astype(str)==cur_cls_sno] if cur_cls_sno != "Semua Sample" else df_cls_cat
+
+        _ref_col_cls   = "ref"   if "ref"   in df_cls_sno.columns else "PartName"
+        _param_col_cls = "point" if "point" in df_cls_sno.columns else "Parameter"
+
+        ref_cls_vals = sorted([r for r in df_cls_sno[_ref_col_cls].dropna().astype(str).unique() if r not in ("","-","nan")])
+        ref_cls_opts = ["Semua Ref / Point"] + ref_cls_vals
+        if st.session_state.get("cls_ref") not in ref_cls_opts:
+            st.session_state["cls_ref"] = "Semua Ref / Point"
+
+        cur_cls_ref  = st.session_state.get("cls_ref", "Semua Ref / Point")
+        df_cls_ref   = df_cls_sno[df_cls_sno[_ref_col_cls].astype(str)==cur_cls_ref] if cur_cls_ref != "Semua Ref / Point" else df_cls_sno
+
+        param_cls_vals = sorted([p for p in df_cls_ref[_param_col_cls].dropna().astype(str).unique() if p not in ("","-","nan")])
+        param_cls_opts = ["Semua Parameter"] + param_cls_vals
+        if st.session_state.get("cls_param") not in param_cls_opts:
+            st.session_state["cls_param"] = "Semua Parameter"
+
+        kp_cls_opts = ["Semua Titik", "KP Only"]
+        if st.session_state.get("cls_kp") not in kp_cls_opts:
+            st.session_state["cls_kp"] = "Semua Titik"
+
         cls_r2c1, cls_r2c2, cls_r2c3 = st.columns([2.5, 1.4, 1.2], gap="small")
         with cls_r2c1:
             f_combo_cls = st.selectbox("🔩 Part · Model", combo_cls_opts, key="cls_combo")
@@ -627,6 +692,14 @@ class PredictivePage:
             f_cat = st.selectbox("🏷 Kategori", cat_cls_opts, key="cls_cat")
         with cls_r2c3:
             f_sno_cls = st.selectbox("🔢 Sample No", sno_cls_opts, key="cls_sno")
+
+        cls_r3c1, cls_r3c2, cls_r3c3 = st.columns([1.2, 1.5, 2.5], gap="small")
+        with cls_r3c1:
+            f_kp_cls = st.selectbox("⚠ Kritikal Point", kp_cls_opts, key="cls_kp")
+        with cls_r3c2:
+            f_ref_cls = st.selectbox("📍 Ref / Point", ref_cls_opts, key="cls_ref")
+        with cls_r3c3:
+            f_param_cls = st.selectbox("📐 Parameter", param_cls_opts, key="cls_param")
 
         # Terapkan semua filter
         df_filtered = result.copy()
@@ -642,6 +715,12 @@ class PredictivePage:
             df_filtered = df_filtered[df_filtered["Category"]==f_cat]
         if f_sno_cls != "Semua Sample":
             df_filtered = df_filtered[df_filtered["SampleNo"].astype(str)==f_sno_cls]
+        if f_kp_cls == "KP Only" and "KP" in df_filtered.columns:
+            df_filtered = df_filtered[df_filtered["KP"].astype(str).isin(["1","1.0","True"])]
+        if f_ref_cls != "Semua Ref / Point" and _ref_col_cls in df_filtered.columns:
+            df_filtered = df_filtered[df_filtered[_ref_col_cls].astype(str)==f_ref_cls]
+        if f_param_cls != "Semua Parameter" and _param_col_cls in df_filtered.columns:
+            df_filtered = df_filtered[df_filtered[_param_col_cls].astype(str)==f_param_cls]
 
         df_show = df_filtered.copy()
 
@@ -671,11 +750,12 @@ class PredictivePage:
             st.error(f"⚠️ **{n_ng} titik** diprediksi NG pada "
                      f"Shift {next_shift} · {next_date.strftime('%d %b %Y')}")
 
-        sc = ["PartName","ModelName","ref","point","SampleNo","Prob_NG","Pred","Risiko"]
+        sc = ["PartName","ModelName","ref","point","SampleNo","KP","Prob_NG","Pred","Risiko"]
         sc = [c for c in sc if c in df_show.columns]
         df_tbl = df_show[sc].sort_values("Prob_NG", ascending=False).reset_index(drop=True)
-        df_tbl.columns = ["Part","Model","Ref","Parameter","SampleNo",
-                          "Prob NG (%)","Prediksi","Risiko"][:len(sc)]
+        _col_rename = {"PartName":"Part","ModelName":"Model","ref":"Ref","point":"Parameter",
+                       "SampleNo":"Sample No","KP":"KP","Prob_NG":"Prob NG (%)","Pred":"Prediksi","Risiko":"Risiko"}
+        df_tbl.columns = [_col_rename.get(c,c) for c in sc]
         st.dataframe(df_tbl, use_container_width=True, hide_index=True,
                      height=min(520, 42 + len(df_tbl)*36))
 
@@ -833,7 +913,39 @@ class PredictivePage:
         with spc_r1c2:
             f_cat = st.selectbox("🏷 Kategori", cat_spc_opts, key="pred_cat")
 
-        # ── Filter Baris 2: Rule (tetap pills) ──
+        # Baris 2: KP | Ref/Point | Parameter (cascade dari combo+cat)
+        cur_spc_cat  = st.session_state.get("pred_cat", "Semua Kategori")
+        df_spc_cat   = df_spc_combo[df_spc_combo["Category"]==cur_spc_cat] if cur_spc_cat != "Semua Kategori" and "Category" in df_spc_combo.columns else df_spc_combo
+
+        _ref_col_spc   = "ref"   if "ref"   in df_spc_cat.columns else "PartName"
+        _param_col_spc = "point" if "point" in df_spc_cat.columns else "Parameter"
+
+        ref_spc_vals = sorted([r for r in df_spc_cat[_ref_col_spc].dropna().astype(str).unique() if r not in ("","-","nan")])
+        ref_spc_opts = ["Semua Ref / Point"] + ref_spc_vals
+        if st.session_state.get("pred_ref") not in ref_spc_opts:
+            st.session_state["pred_ref"] = "Semua Ref / Point"
+
+        cur_spc_ref  = st.session_state.get("pred_ref", "Semua Ref / Point")
+        df_spc_ref   = df_spc_cat[df_spc_cat[_ref_col_spc].astype(str)==cur_spc_ref] if cur_spc_ref != "Semua Ref / Point" else df_spc_cat
+
+        param_spc_vals = sorted([p for p in df_spc_ref[_param_col_spc].dropna().astype(str).unique() if p not in ("","-","nan")])
+        param_spc_opts = ["Semua Parameter"] + param_spc_vals
+        if st.session_state.get("pred_param") not in param_spc_opts:
+            st.session_state["pred_param"] = "Semua Parameter"
+
+        kp_spc_opts = ["Semua Titik", "KP Only"]
+        if st.session_state.get("pred_kp") not in kp_spc_opts:
+            st.session_state["pred_kp"] = "Semua Titik"
+
+        spc_r2c1, spc_r2c2, spc_r2c3 = st.columns([1.2, 1.5, 2.5], gap="small")
+        with spc_r2c1:
+            f_kp_spc = st.selectbox("⚠ Kritikal Point", kp_spc_opts, key="pred_kp")
+        with spc_r2c2:
+            f_ref_spc = st.selectbox("📍 Ref / Point", ref_spc_opts, key="pred_ref")
+        with spc_r2c3:
+            f_param_spc = st.selectbox("📐 Parameter", param_spc_opts, key="pred_param")
+
+        # ── Filter Baris 3: Rule (tetap pills) ──
         st.markdown('<div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">📏 Filter Rule SPC</div>', unsafe_allow_html=True)
         rule_opts = ["Semua Rule"] + [f"Rule {i}" for i in range(1,8)]
         f_rule = st.pills(
@@ -863,6 +975,12 @@ class PredictivePage:
                 df_src = df_src[df_src["ModelName"] == f_model]
             if f_cat != "Semua Kategori" and "Category" in df_src.columns:
                 df_src = df_src[df_src["Category"] == f_cat]
+            if f_kp_spc == "KP Only" and "KP" in df_src.columns:
+                df_src = df_src[df_src["KP"].astype(str).isin(["1","1.0","True"])]
+            if f_ref_spc != "Semua Ref / Point" and _ref_col_spc in df_src.columns:
+                df_src = df_src[df_src[_ref_col_spc].astype(str) == f_ref_spc]
+            if f_param_spc != "Semua Parameter" and _param_col_spc in df_src.columns:
+                df_src = df_src[df_src[_param_col_spc].astype(str) == f_param_spc]
             with st.spinner("Mendeteksi kondisi proses di luar kendali..."):
                 st.session_state[nelson_key] = _build_kendali_history(df_src)
                 st.session_state[ts_key]     = _time.time()
@@ -999,12 +1117,8 @@ class PredictivePage:
                         f'<div style="font-size:12px;color:#1E293B;line-height:1.5;font-weight:500;">{desc}</div>'
                         f'<div style="margin-top:8px;border-radius:6px;overflow:hidden;'
                         f'border:1px dashed {clr}66;background:#F8FAFC;'
-                        f'height:80px;display:flex;align-items:center;justify-content:center;">'
-                        f'<img src="assets/ilustrasi/spc_rule_{r_num}.jpg" '
-                        f'onerror="this.style.display=\'none\';this.parentElement.innerHTML='
-                        f'\'<span style=\\"font-size:10px;color:#CBD5E1;\\">'
-                        f'📷 Rule {r_num} — ilustrasi belum tersedia</span>\';" '
-                        f'style="max-width:100%;max-height:78px;object-fit:contain;" alt="Rule {r_num}"/>'
+                        f'height:80px;display:flex;align-items:center;justify-content:center;">' +
+                        _get_rule_img_html(r_num, clr) +
                         f'</div>'
                         f'</div>',
                         unsafe_allow_html=True
