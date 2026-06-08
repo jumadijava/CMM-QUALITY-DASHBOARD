@@ -1154,78 +1154,102 @@ class PredictivePage:
         nom_d  = row["_nom"]
         vbr_c  = row["_vbr"]
         n_use  = row["_n_use"]
+        n_fc_i = len(y_fc)
 
-        RC  = {1:"#EF4444",2:"#F59E0B",3:"#8B5CF6",
-               4:"#06B6D4",5:"#10B981",6:"#F97316",7:"#3B82F6"}
+        RC = {1:"#EF4444",2:"#F59E0B",3:"#8B5CF6",
+              4:"#06B6D4",5:"#10B981",6:"#F97316",7:"#3B82F6"}
 
-        # Mean/sigma historis → UCL/LCL
         mean_v  = float(np.mean(y_use))
         sigma_v = float(np.std(y_use, ddof=1)) if n_use > 1 else 0.0
         ucl_v   = round(mean_v + 3*sigma_v, 5)
         lcl_v   = round(mean_v - 3*sigma_v, 5)
 
-        # Style titik historis — border warna rule
-        series_hist = []
-        for i, v in enumerate(y_use):
-            st_item = {"color":"#6366F1"}
+        # X labels: dd %b S{shift} persis SPC
+        df_chart = df_pr_filt[
+            (df_pr_filt["PartName"].astype(str)==str(row["Part"])) &
+            (df_pr_filt["ModelName"].astype(str)==str(row["Model"])) &
+            (df_pr_filt["SampleNo"].astype(str)==str(row["Sample"])) &
+            (df_pr_filt[ref_col].astype(str)==str(row["Ref"])) &
+            (df_pr_filt[param_col].astype(str)==str(row["Parameter"]))
+        ].sort_values(["Date","Shift","Cycle"]).dropna(subset=["Actual"]).tail(n_use).reset_index(drop=True)
+
+        if len(df_chart) == n_use:
+            x_hist_lbl = df_chart.apply(
+                lambda r: f"{r['Date'].strftime('%d %b')} S{r['Shift']}", axis=1
+            ).tolist()
+            last_date  = df_chart["Date"].iloc[-1]
+            last_shift = int(df_chart["Shift"].iloc[-1])
+            fc_labels  = []
+            cd, cs = last_date, last_shift
+            for _ in range(n_fc_i):
+                cs += 1
+                if cs > 3:
+                    cs = 1
+                    cd = cd + pd.Timedelta(days=1)
+                fc_labels.append(f"{cd.strftime('%d %b')} S{cs}")
+        else:
+            x_hist_lbl = [f"H{i+1}" for i in range(n_use)]
+            fc_labels  = [f"F+{i+1}" for i in range(n_fc_i)]
+
+        x_all = x_hist_lbl + fc_labels
+        n_all = len(x_all)
+
+        # Style titik — 1 fungsi untuk historis, 1 untuk forecast
+        def _pt_h(i, v):
+            item = {"color":"#6366F1"}
             for r in [1,2,3,4,5,6,7]:
                 if i in vbr_c[r]:
-                    st_item = {"color":"#6366F1","borderColor":RC[r],"borderWidth":2.5}
+                    item = {"color":"#6366F1","borderColor":RC[r],"borderWidth":2.5}
                     break
-            series_hist.append({"value":round(v,5),"itemStyle":st_item})
+            return {"value":round(v,5),"itemStyle":item}
 
-        # Style titik forecast — isi merah kalau NG, border warna rule
-        series_fc = []
-        for i, v in enumerate(y_fc):
-            base_c = "#EF4444" if (v > usl_d or v < lsl_d) else "#F59E0B"
-            st_item = {"color":base_c}
+        def _pt_f(i, v):
+            base = "#EF4444" if (v>usl_d or v<lsl_d) else "#F59E0B"
+            item = {"color":base}
             for r in [1,2,3,4,5,6,7]:
-                if (i + n_use) in vbr_c[r]:
-                    st_item = {"color":base_c,"borderColor":RC[r],"borderWidth":2.5}
+                if (i+n_use) in vbr_c[r]:
+                    item = {"color":base,"borderColor":RC[r],"borderWidth":2.5}
                     break
-            series_fc.append({"value":round(float(v),5),"itemStyle":st_item})
+            return {"value":round(float(v),5),"itemStyle":item}
 
-        # Tren line
-        x_arr = np.arange(n_use)
+        pts_hist = [_pt_h(i,v) for i,v in enumerate(y_use)]
+        pts_fc   = [_pt_f(i,v) for i,v in enumerate(y_fc)]
+
+        # Tren sepanjang n_all
+        x_arr  = np.arange(n_use)
         sv, iv = np.polyfit(x_arr, y_use, 1)
-        trend_h = [round(float(sv*i+iv),5) for i in range(n_use)]
-        trend_f = [round(float(v),5) for v in y_fc]
+        trend_all = [round(float(sv*i+iv),5) for i in range(n_all)]
 
-        # Y range
         all_v = y_use + y_fc + [ucl_v,lcl_v,usl_d,lsl_d,nom_d]
         y_pad = (max(all_v)-min(all_v))*0.1 or sigma_v*0.5 or 0.01
         y_min = round(min(all_v)-y_pad,5)
         y_max = round(max(all_v)+y_pad,5)
 
-        x_all = [f"H{i+1}" for i in range(n_use)] + [f"F+{i+1}" for i in range(len(y_fc))]
-
         mark_lines = [
             {"yAxis":ucl_v,"lineStyle":{"color":"#EF4444","width":1,"type":"dashed"},
-             "label":{"formatter":f"UCL {ucl_v}","fontSize":9,"color":"#EF4444"}},
+             "label":{"formatter":f"UCL {ucl_v}","fontSize":9,"color":"#EF4444","position":"end"}},
             {"yAxis":lcl_v,"lineStyle":{"color":"#EF4444","width":1,"type":"dashed"},
-             "label":{"formatter":f"LCL {lcl_v}","fontSize":9,"color":"#EF4444"}},
+             "label":{"formatter":f"LCL {lcl_v}","fontSize":9,"color":"#EF4444","position":"end"}},
             {"yAxis":usl_d,"lineStyle":{"color":"#EF4444","width":2,"type":"solid"},
-             "label":{"formatter":f"USL {usl_d}","fontSize":10,"color":"#EF4444"}},
+             "label":{"formatter":f"USL {usl_d}","fontSize":10,"color":"#EF4444","position":"end"}},
             {"yAxis":lsl_d,"lineStyle":{"color":"#EF4444","width":2,"type":"solid"},
-             "label":{"formatter":f"LSL {lsl_d}","fontSize":10,"color":"#EF4444"}},
+             "label":{"formatter":f"LSL {lsl_d}","fontSize":10,"color":"#EF4444","position":"end"}},
             {"yAxis":nom_d,"lineStyle":{"color":"#22C55E","width":1.5,"type":"dashed"},
-             "label":{"formatter":f"Nom {nom_d}","fontSize":10,"color":"#22C55E"}},
+             "label":{"formatter":f"Nom {nom_d}","fontSize":10,"color":"#22C55E","position":"end"}},
         ]
 
         st.markdown(
-            f'<div style="font-size:13px;font-weight:700;color:#0F172A;margin:16px 0 6px;">'
+            f'<div style="font-size:13px;font-weight:700;color:#0F172A;margin:16px 0 4px;">'
             f'Tren Kendali + Prediksi — {row["Ref"]} · {row["Parameter"]} · No.{row["Sample"]}</div>',
             unsafe_allow_html=True
         )
-
-        # Legend warna — persis SPC
         st.markdown("""
-        <div style="display:flex;flex-wrap:wrap;gap:14px;font-size:11px;
-                    color:#64748B;margin-bottom:6px;">
+        <div style="display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:#64748B;margin-bottom:6px;">
           <span>&#8943; <span style="color:#EF4444;">dashed</span> UCL/LCL (3&sigma;)</span>
+          <span>&#9632; <span style="color:#EF4444;">solid</span> USL/LSL</span>
           <span style="color:#6366F1;">&#9711;</span> Historis &nbsp;
           <span style="color:#F59E0B;">&#9711;</span> Forecast OK &nbsp;
-          <span style="color:#EF4444;">&#9711;</span> Forecast NG &nbsp;|
+          <span style="color:#EF4444;">&#9711;</span> Forecast NG &nbsp;|&nbsp;
           <span style="color:#EF4444;">&#9711;</span> R1 &nbsp;
           <span style="color:#F59E0B;">&#9711;</span> R2 &nbsp;
           <span style="color:#8B5CF6;">&#9711;</span> R3 &nbsp;
@@ -1236,87 +1260,102 @@ class PredictivePage:
         </div>
         """, unsafe_allow_html=True)
 
+        _chart_key = f"pr_chart_{abs(hash(str(row['Ref'])+str(row['Parameter'])+str(row['Sample'])))}"
         st_echarts({
-            "title": {"text": f'Tren — {row["Ref"]} · {row["Parameter"]} · No.{row["Sample"]}',
+            "title": {"text":f'Tren — {row["Ref"]} · {row["Parameter"]} · No.{row["Sample"]}',
                       "left":12,"top":8,
                       "textStyle":{"fontSize":13,"fontWeight":700,"color":"#0F172A"}},
-            "grid": {"top":50,"right":80,"bottom":55,"left":60},
-            "tooltip": {"trigger":"axis","formatter":"{b}<br/>Aktual: <b>{c}</b>"},
-            "xAxis": {"type":"category","data":x_all,
-                      "axisLabel":{"rotate":20,"fontSize":9,"interval":"auto"}},
-            "yAxis": {"type":"value","min":y_min,"max":y_max,"name":"Aktual",
-                      "axisLabel":{"fontSize":10},
-                      "splitLine":{"lineStyle":{"color":"#F1F5F9","type":"dashed"}}},
-            "dataZoom": [{"type":"inside","start":0,"end":100},
-                         {"type":"slider","bottom":8,"height":16}],
-            "legend": {"data":["Aktual","Forecast","Tren"],"bottom":28,"icon":"circle",
-                       "itemWidth":8,"textStyle":{"fontSize":10}},
+            "grid":  {"top":50,"right":90,"bottom":58,"left":60},
+            "tooltip":{"trigger":"axis","formatter":"{b}<br/>Aktual: <b>{c}</b>"},
+            "legend":{"data":["Aktual","Forecast","Tren"],"top":10,"right":16,
+                      "icon":"circle","itemWidth":8,"textStyle":{"fontSize":10}},
+            "xAxis": {
+                "type":"category","data":x_all,
+                "axisLabel":{"rotate":20,"fontSize":9,"interval":"auto"},
+                "axisLine":{"lineStyle":{"color":"#E2E8F0"}},
+                "axisTick":{"show":False},
+            },
+            "yAxis": {
+                "type":"value","min":y_min,"max":y_max,"name":"Aktual",
+                "axisLabel":{"fontSize":10},
+                "splitLine":{"lineStyle":{"color":"#F1F5F9","type":"dashed"}},
+            },
+            "dataZoom": [
+                {"type":"inside","start":0,"end":100},
+                {"type":"slider","bottom":5,"height":18,
+                 "borderColor":"transparent",
+                 "fillerColor":"rgba(99,102,241,0.15)",
+                 "handleStyle":{"color":"#6366F1"},
+                 "textStyle":{"fontSize":9}},
+            ],
             "series": [
                 {"name":"Aktual","type":"line",
-                 "data": series_hist + [None]*len(y_fc),
+                 "data": pts_hist + [None]*n_fc_i,
                  "symbol":"circle","symbolSize":8,
                  "lineStyle":{"color":"#6366F1","width":1.5},
-                 "markLine":{"symbol":["none","none"],"silent":True,"data":mark_lines}},
+                 "markLine":{"symbol":["none","none"],"silent":True,"data":mark_lines},
+                 "markArea":{
+                     "silent":True,
+                     "itemStyle":{"color":"rgba(249,115,22,0.04)"},
+                     "data":[[{"xAxis":x_hist_lbl[-1] if x_hist_lbl else ""},{"xAxis":x_all[-1]}]],
+                 }},
                 {"name":"Forecast","type":"line",
-                 "data": [None]*n_use + series_fc,
+                 "data": [None]*n_use + pts_fc,
                  "symbol":"circle","symbolSize":8,
                  "lineStyle":{"color":"#F59E0B","width":2,"type":"dashed"}},
                 {"name":"Tren","type":"line",
-                 "data": trend_h + trend_f,
+                 "data": trend_all,
                  "symbol":"none",
                  "lineStyle":{"color":"#94A3B8","width":1.5,"type":"dotted"}},
             ],
-        }, height="340px", key=f"pr_chart_{row['Ref']}_{row['Parameter']}_{row['Sample']}")
+        }, height="360px", key=_chart_key)
 
         # ── Kondisi Terdeteksi ────────────────────────────────────
-        KONTEKS = {
-            1: "Titik berada di luar batas kendali — indikasi penyebab khusus (special cause) yang perlu segera diinvestigasi.",
-            2: "Proses mengalami pergeseran dari nilai rata-rata — kemungkinan ada perubahan pada material, mesin, atau operator.",
-            3: "Tren naik atau turun secara konsisten — indikasi adanya drift pada proses, misalnya keausan alat.",
-            4: "Pola osilasi berlebihan — kemungkinan over-adjustment atau gangguan sistematis.",
-            5: "Peringatan dini pergeseran proses — dua dari tiga titik mendekati batas kendali.",
-            6: "Proses bergeser secara halus dari rata-rata — empat dari lima titik jauh dari pusat.",
-            7: "Proses terlalu konsisten di dekat rata-rata — kemungkinan stratifikasi data.",
+        KONTEKS_PR = {
+            1:"Titik berada di luar batas kendali — indikasi penyebab khusus yang perlu segera diinvestigasi.",
+            2:"Proses mengalami pergeseran dari nilai rata-rata — kemungkinan ada perubahan material, mesin, atau operator.",
+            3:"Tren naik atau turun secara konsisten — indikasi drift pada proses, misalnya keausan alat.",
+            4:"Pola osilasi berlebihan — kemungkinan over-adjustment atau gangguan sistematis.",
+            5:"Peringatan dini pergeseran proses — dua dari tiga titik mendekati batas kendali.",
+            6:"Proses bergeser secara halus dari rata-rata — empat dari lima titik jauh dari pusat.",
+            7:"Proses terlalu konsisten di dekat rata-rata — kemungkinan stratifikasi data.",
         }
-        triggered_hist = [r for r in range(1,8) if any(i < n_use  for i in vbr_c[r])]
+        triggered_hist = [r for r in range(1,8) if any(i <  n_use for i in vbr_c[r])]
         triggered_fc   = [r for r in range(1,8) if any(i >= n_use for i in vbr_c[r])]
         triggered_all  = sorted(set(triggered_hist)|set(triggered_fc))
 
         if triggered_all:
-            st.markdown('<div style="font-size:12px;font-weight:700;color:#0F172A;'
-                        'margin:12px 0 6px;">Kondisi Terdeteksi</div>',
+            st.markdown('<div style="font-size:12px;font-weight:700;color:#0F172A;margin:12px 0 6px;">Kondisi Terdeteksi</div>',
                         unsafe_allow_html=True)
             for r_num in triggered_all:
                 clr     = RC[r_num]
                 sev     = RULES[r_num]["severity"]
                 desc    = RULES[r_num]["desc"]
-                konteks = KONTEKS[r_num]
+                konteks = KONTEKS_PR[r_num]
                 is_crit = sev == "Critical"
                 sev_bg  = "#FEE2E2" if is_crit else "#FEF3C7"
                 sev_clr = "#991B1B" if is_crit else "#92400E"
                 card_bg = "#FFF0F0" if is_crit else "#F5F7FF"
-                n_hv = len([i for i in vbr_c[r_num] if i < n_use])
+                n_hv = len([i for i in vbr_c[r_num] if i <  n_use])
                 n_fv = len([i for i in vbr_c[r_num] if i >= n_use])
-                if n_hv and n_fv:
-                    zone = f'<span style="background:#FEE2E2;color:#991B1B;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;">Historis + Prediksi</span>'
-                elif n_fv:
-                    zone = f'<span style="background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;">Prediksi</span>'
-                else:
-                    zone = f'<span style="background:#EFF6FF;color:#1D4ED8;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;">Historis</span>'
+                zone = (
+                    '<span style="background:#FEE2E2;color:#991B1B;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;">Historis + Prediksi</span>'
+                    if (n_hv and n_fv) else
+                    '<span style="background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;">Prediksi</span>'
+                    if n_fv else
+                    '<span style="background:#EFF6FF;color:#1D4ED8;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;">Historis</span>'
+                )
                 st.markdown(
-                    f'<div style="display:flex;align-items:flex-start;gap:12px;'
-                    f'background:{card_bg};border:1.5px solid {clr}66;border-left:5px solid {clr};'
+                    f'<div style="display:flex;align-items:flex-start;gap:12px;background:{card_bg};'
+                    f'border:1.5px solid {clr}66;border-left:5px solid {clr};'
                     f'border-radius:10px;padding:12px 16px;margin-bottom:8px;'
                     f'box-shadow:0 2px 8px rgba(0,0,0,0.07);">'
                     f'<div style="min-width:64px;padding-top:1px;">'
                     f'<span style="background:{clr};color:#fff;border-radius:6px;'
-                    f'padding:3px 10px;font-size:11px;font-weight:700;'
-                    f'white-space:nowrap;">Rule {r_num}</span></div>'
-                    f'<div style="flex:1;">'
-                    f'<div style="font-size:12px;color:#0F172A;font-weight:600;margin-bottom:3px;">'
-                    f'{desc}{zone}</div>'
-                    f'<div style="font-size:11px;color:#475569;margin-bottom:6px;line-height:1.5;">'
-                    f'{konteks}</div>'
+                    f'padding:3px 10px;font-size:11px;font-weight:700;white-space:nowrap;">Rule {r_num}</span>'
+                    f'</div><div style="flex:1;">'
+                    f'<div style="font-size:12px;color:#0F172A;font-weight:600;margin-bottom:3px;">{desc}{zone}</div>'
+                    f'<div style="font-size:11px;color:#475569;margin-bottom:6px;line-height:1.5;">{konteks}</div>'
                     f'<div style="display:flex;gap:8px;font-size:11px;color:#64748B;">'
                     f'<span>📍 {n_hv} historis · {n_fv} forecast</span>'
                     f'<span style="color:#CBD5E1;">|</span>'
@@ -1326,19 +1365,19 @@ class PredictivePage:
                     unsafe_allow_html=True
                 )
 
-        # ── Keterangan Kondisi Proses di Luar Kendali ─────────────
+        # ── Keterangan — expander key statis (tidak bertambah) ────
         with st.expander("📋 Keterangan Kondisi Proses di Luar Kendali", expanded=False):
             RULE_META_PR = [
                 (1,"#EF4444","Critical","Satu atau lebih titik data berada di luar batas kendali."),
                 (2,"#F59E0B","Warning", "Delapan titik data berurutan berada di satu sisi nilai rata-rata."),
                 (3,"#8B5CF6","Warning", "Tujuh titik data berturut-turut yang meningkat atau menurun."),
                 (4,"#06B6D4","Warning", "Empat belas titik data berurutan yang bergantian naik dan turun."),
-                (5,"#10B981","Warning", "Dua titik data dari tiga berurutan berada di zona A atau di luarnya di sisi yang sama dari rata-rata."),
-                (6,"#F97316","Warning", "Empat titik data dari lima berurutan berada di zona B atau lebih jauh di sisi yang sama dari rata-rata."),
-                (7,"#3B82F6","Warning", "Lima belas titik data berurutan berada dalam zona C (di atas dan di bawah rata-rata)."),
+                (5,"#10B981","Warning", "Dua dari tiga titik berurutan berada di zona A atau di luarnya."),
+                (6,"#F97316","Warning", "Empat dari lima titik berurutan berada di zona B atau lebih jauh."),
+                (7,"#3B82F6","Warning", "Lima belas titik berurutan berada dalam zona C."),
             ]
             cols_pr = st.columns(2)
-            for idx_pr, (r_num, clr, sev, desc) in enumerate(RULE_META_PR):
+            for idx_pr,(r_num,clr,sev,desc) in enumerate(RULE_META_PR):
                 is_crit = sev == "Critical"
                 sev_bg  = "#FEE2E2" if is_crit else "#EFF6FF"
                 sev_clr = "#991B1B" if is_crit else "#1D4ED8"
@@ -1347,7 +1386,7 @@ class PredictivePage:
                     st.markdown(
                         f'<div style="background:{card_bg};border:1.5px solid {clr}88;'
                         f'border-left:5px solid {clr};border-radius:10px;'
-                        f'padding:12px 14px;margin-bottom:10px;'
+                        f'padding:12px 14px;margin-bottom:4px;'
                         f'box-shadow:0 2px 8px rgba(0,0,0,0.08);">'
                         f'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
                         f'<span style="background:{clr};color:#fff;border-radius:6px;'
@@ -1356,8 +1395,8 @@ class PredictivePage:
                         f'padding:1px 8px;font-size:10px;font-weight:700;">{sev}</span>'
                         f'</div>'
                         f'<div style="font-size:12px;color:#1E293B;line-height:1.5;font-weight:500;">{desc}</div>'
-                        f'</div>' +
-                        '<div style="margin-top:8px;border-radius:6px;overflow:hidden;'
+                        f'</div>'
+                        f'<div style="margin-bottom:10px;border-radius:6px;overflow:hidden;'
                         f'border:1px dashed {clr}66;background:#F8FAFC;'
                         f'height:80px;display:flex;align-items:center;justify-content:center;">' +
                         _get_rule_img_html(r_num, clr) +
