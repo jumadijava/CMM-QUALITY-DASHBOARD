@@ -225,32 +225,77 @@ class PredictivePage:
     def _render_forecast_single(self):
         df = self.df_all
 
-        # ── Selector ─────────────────────────────────────────────
-        c1, c2, c3 = st.columns(3, gap="small")
+        # ── Baris 1: Part·Model | SampleNo | Category ────────────
+        # Cascade: combo → sampleno → ref → param
+        combos_df_fc = (
+            df[["PartName","ModelName"]].dropna().drop_duplicates()
+            .sort_values(["PartName","ModelName"])
+        )
+        combo_opts_fc = ["— Pilih Part & Model —"] + [
+            f"{r.PartName} · {r.ModelName}" for _, r in combos_df_fc.iterrows()
+        ]
+        if st.session_state.get("fc_combo") not in combo_opts_fc:
+            st.session_state["fc_combo"] = "— Pilih Part & Model —"
+
+        cur_combo_fc = st.session_state.get("fc_combo", "— Pilih Part & Model —")
+        df_after_combo_fc = df.copy()
+        f_part, f_model = "", ""
+        if cur_combo_fc != "— Pilih Part & Model —":
+            _sp = cur_combo_fc.split(" · ", 1)
+            if len(_sp) == 2:
+                f_part, f_model = _sp[0], _sp[1]
+                df_after_combo_fc = df[(df["PartName"]==f_part)&(df["ModelName"]==f_model)]
+
+        sno_vals_fc = sorted(
+            df_after_combo_fc["SampleNo"].dropna().astype(str).unique().tolist(),
+            key=lambda s: (0, int(s)) if s.isdigit() else (1, s)
+        )
+        sno_opts_fc = ["Semua Sample"] + sno_vals_fc
+        if st.session_state.get("fc_sno") not in sno_opts_fc:
+            st.session_state["fc_sno"] = "Semua Sample"
+
+        c1, c2, c3 = st.columns([2.5, 1.2, 1.2], gap="small")
         with c1:
-            parts  = sorted(df["PartName"].dropna().unique().tolist())
-            f_part = st.selectbox("Part", parts, key="fc_part")
+            f_combo_fc = st.selectbox("🔩 Part · Model", combo_opts_fc, key="fc_combo")
+            if f_combo_fc != "— Pilih Part & Model —":
+                _sp = f_combo_fc.split(" · ", 1)
+                if len(_sp) == 2:
+                    f_part, f_model = _sp[0], _sp[1]
+                    df_after_combo_fc = df[(df["PartName"]==f_part)&(df["ModelName"]==f_model)]
         with c2:
-            models = sorted(df[df["PartName"]==f_part]["ModelName"].dropna().unique().tolist())
-            f_model = st.selectbox("Model", models, key="fc_model")
+            f_sno = st.selectbox("🔢 Sample No", sno_opts_fc, key="fc_sno")
         with c3:
-            snos   = sorted(df[(df["PartName"]==f_part)&(df["ModelName"]==f_model)]["SampleNo"].dropna().astype(str).unique().tolist(),
-                            key=lambda s: (0,int(s)) if s.isdigit() else (1,s))
-            f_sno  = st.selectbox("SampleNo", snos, key="fc_sno")
+            fc_n = st.number_input("📏 Horizon (shift ke depan)", min_value=5, max_value=90, value=30, step=5, key="fc_n")
 
+        # ── Baris 2: Ref | Parameter (cascade dari combo+sno) ────
         param_col = "point" if "point" in df.columns else "Parameter"
-        df_pm = df[(df["PartName"]==f_part)&(df["ModelName"]==f_model)&(df["SampleNo"].astype(str)==f_sno)]
-        refs   = sorted(df_pm["ref"].dropna().astype(str).unique().tolist())
-        refs   = [r for r in refs if r not in ("-","nan","")]
+        df_pm = df_after_combo_fc.copy()
+        if f_sno != "Semua Sample":
+            df_pm = df_pm[df_pm["SampleNo"].astype(str) == f_sno]
 
-        c4, c5, c6 = st.columns(3, gap="small")
+        refs_fc = sorted([r for r in df_pm["ref"].dropna().astype(str).unique()
+                          if r not in ("-","nan","")])
+        ref_opts_fc = ["— Pilih Ref / Point —"] + refs_fc
+        if st.session_state.get("fc_ref") not in ref_opts_fc:
+            st.session_state["fc_ref"] = "— Pilih Ref / Point —"
+
+        cur_ref_fc = st.session_state.get("fc_ref", "— Pilih Ref / Point —")
+        df_pm_ref  = df_pm[df_pm["ref"].astype(str)==cur_ref_fc] if cur_ref_fc != "— Pilih Ref / Point —" else df_pm
+        params_fc  = sorted([p for p in df_pm_ref[param_col].dropna().astype(str).unique()
+                              if p not in ("","nan","-")])
+        param_opts_fc = ["— Pilih Parameter —"] + params_fc
+        if st.session_state.get("fc_param") not in param_opts_fc:
+            st.session_state["fc_param"] = "— Pilih Parameter —"
+
+        c4, c5 = st.columns([1.5, 2.5], gap="small")
         with c4:
-            f_ref  = st.selectbox("Ref", refs, key="fc_ref") if refs else None
+            f_ref   = st.selectbox("📍 Ref / Point", ref_opts_fc, key="fc_ref")
         with c5:
-            params = sorted(df_pm[df_pm["ref"].astype(str)==f_ref][param_col].dropna().unique().tolist()) if f_ref else []
-            f_param = st.selectbox("Parameter", params, key="fc_param") if params else None
-        with c6:
-            fc_n = st.number_input("Horizon (shift ke depan)", min_value=5, max_value=90, value=30, step=5, key="fc_n")
+            f_param = st.selectbox("📐 Parameter",   param_opts_fc, key="fc_param")
+
+        if f_combo_fc == "— Pilih Part & Model —" or f_ref == "— Pilih Ref / Point —" or f_param == "— Pilih Parameter —":
+            st.info("Pilih Part · Model, Ref, dan Parameter untuk melanjutkan.")
+            return
 
         if not f_ref or not f_param:
             st.info("Pilih Ref dan Parameter untuk melanjutkan.")
@@ -532,49 +577,73 @@ class PredictivePage:
 
         result = st.session_state[cache_key]
 
-        # ── Filter pills ──────────────────────────────────────────
-        c1, c2, c3, c4 = st.columns(4, gap="small")
-        with c1:
-            f_risk = st.pills("Filter risiko",
-                ["Semua","Prediksi NG","🔴 Tinggi","🟡 Sedang","🟢 Rendah"],
-                default="🔴 Tinggi", key="cls_filter",
-                selection_mode="single", label_visibility="collapsed") or "Semua"
-        with c2:
-            parts_avail = sorted(result["PartName"].unique().tolist())
-            f_pf = st.pills("Part", parts_avail, default=parts_avail[0],
-                            key="cls_part_f", selection_mode="single",
-                            label_visibility="collapsed") or parts_avail[0]
-        with c3:
-            models_avail = sorted(result[result["PartName"]==f_pf]["ModelName"].unique().tolist())
-            f_model_f = st.pills("Model", models_avail, default=models_avail[0],
-                                 key=f"cls_model_f_{f_pf}", selection_mode="single",
-                                 label_visibility="collapsed") or models_avail[0]
-        with c4:
-            f_cat = st.pills("Kategori", ["Produksi","QIS","Semua"],
-                             default="Produksi", key="cls_cat",
-                             selection_mode="single",
-                             label_visibility="collapsed") or "Produksi"
+        # ── Filter Baris 1: Risiko (pills) tetap di atas ──
+        st.markdown('<div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">🎯 Tingkat Risiko</div>', unsafe_allow_html=True)
+        f_risk = st.pills(
+            "Tingkat Risiko",
+            ["Semua Risiko", "Prediksi NG", "🔴 Tinggi", "🟡 Sedang", "🟢 Rendah"],
+            default="🔴 Tinggi", key="cls_filter",
+            selection_mode="single", label_visibility="collapsed",
+        ) or "Semua Risiko"
 
+        # ── Filter Baris 2: Part·Model | Kategori | Sample No (selectbox cascade) ──
+        combos_cls = (
+            result[["PartName","ModelName"]].drop_duplicates()
+            .sort_values(["PartName","ModelName"])
+        )
+        combo_cls_opts = ["— Semua Part & Model —"] + [
+            f"{r.PartName} · {r.ModelName}" for _, r in combos_cls.iterrows()
+        ]
+        if st.session_state.get("cls_combo") not in combo_cls_opts:
+            st.session_state["cls_combo"] = "— Semua Part & Model —"
+
+        cur_cls_combo = st.session_state.get("cls_combo", "— Semua Part & Model —")
+        df_cls_combo  = result.copy()
+        if cur_cls_combo != "— Semua Part & Model —":
+            _sp = cur_cls_combo.split(" · ", 1)
+            if len(_sp) == 2:
+                df_cls_combo = result[(result["PartName"]==_sp[0])&(result["ModelName"]==_sp[1])]
+
+        cat_cls_vals = sorted(df_cls_combo["Category"].dropna().unique().tolist()) if "Category" in df_cls_combo.columns else []
+        cat_cls_opts = ["Semua Kategori"] + cat_cls_vals
+        if st.session_state.get("cls_cat") not in cat_cls_opts:
+            st.session_state["cls_cat"] = "Produksi" if "Produksi" in cat_cls_opts else "Semua Kategori"
+
+        cur_cls_cat = st.session_state.get("cls_cat", "Semua Kategori")
+        df_cls_cat  = df_cls_combo[df_cls_combo["Category"]==cur_cls_cat] if cur_cls_cat != "Semua Kategori" and "Category" in df_cls_combo.columns else df_cls_combo
+
+        sno_cls_vals = sorted(
+            df_cls_cat["SampleNo"].dropna().astype(str).unique().tolist(),
+            key=lambda s: (0, int(s)) if s.isdigit() else (1, s)
+        )
+        sno_cls_opts = ["Semua Sample"] + sno_cls_vals
+        if st.session_state.get("cls_sno") not in sno_cls_opts:
+            st.session_state["cls_sno"] = "Semua Sample"
+
+        cls_r2c1, cls_r2c2, cls_r2c3 = st.columns([2.5, 1.4, 1.2], gap="small")
+        with cls_r2c1:
+            f_combo_cls = st.selectbox("🔩 Part · Model", combo_cls_opts, key="cls_combo")
+        with cls_r2c2:
+            f_cat = st.selectbox("🏷 Kategori", cat_cls_opts, key="cls_cat")
+        with cls_r2c3:
+            f_sno_cls = st.selectbox("🔢 Sample No", sno_cls_opts, key="cls_sno")
+
+        # Terapkan semua filter
         df_filtered = result.copy()
         if f_risk == "Prediksi NG":
             df_filtered = df_filtered[df_filtered["Pred"]=="NG"]
-        elif f_risk != "Semua":
+        elif f_risk != "Semua Risiko":
             df_filtered = df_filtered[df_filtered["Risiko"]==f_risk]
-        df_filtered = df_filtered[(df_filtered["PartName"]==f_pf) & (df_filtered["ModelName"]==f_model_f)]
-        if f_cat != "Semua" and "Category" in df_filtered.columns:
+        if f_combo_cls != "— Semua Part & Model —":
+            _sp = f_combo_cls.split(" · ", 1)
+            if len(_sp) == 2:
+                df_filtered = df_filtered[(df_filtered["PartName"]==_sp[0])&(df_filtered["ModelName"]==_sp[1])]
+        if f_cat != "Semua Kategori" and "Category" in df_filtered.columns:
             df_filtered = df_filtered[df_filtered["Category"]==f_cat]
-
-        sample_opts = ["Semua"] + sorted(
-            df_filtered["SampleNo"].dropna().unique().tolist(),
-            key=lambda s: (0, int(str(s))) if str(s).isdigit() else (1, str(s))
-        )
-        f_sample = st.pills("SampleNo", sample_opts, default="Semua",
-                            key="cls_sample_f", selection_mode="single",
-                            label_visibility="collapsed") or "Semua"
+        if f_sno_cls != "Semua Sample":
+            df_filtered = df_filtered[df_filtered["SampleNo"].astype(str)==f_sno_cls]
 
         df_show = df_filtered.copy()
-        if f_sample != "Semua":
-            df_show = df_show[df_show["SampleNo"]==f_sample]
 
         # ── KPI responsif filter ──────────────────────────────────
         n_ng   = int((df_show["Pred"]=="NG").sum())
@@ -735,30 +804,50 @@ class PredictivePage:
     @st.fragment
     def _render_spc(self):
 
-        # ── Filter pills ──────────────────────────────────────────
-        c1, c2, c3, c4 = st.columns(4, gap="small")
-        with c1:
-            parts_avail = ["Semua Part"] + sorted(self.df_all["PartName"].dropna().unique().tolist())
-            f_part = st.pills("Part", parts_avail, default="Semua Part",
-                              key="pred_part", label_visibility="collapsed",
-                              selection_mode="single") or "Semua Part"
-        with c2:
-            if f_part == "Semua Part":
-                models_avail = ["Semua Model"] + sorted(self.df_all["ModelName"].dropna().unique().tolist())
-            else:
-                models_avail = ["Semua Model"] + sorted(self.df_all[self.df_all["PartName"]==f_part]["ModelName"].dropna().unique().tolist())
-            f_model = st.pills("Model", models_avail, default="Semua Model",
-                               key=f"pred_model_{f_part}", label_visibility="collapsed",
-                               selection_mode="single") or "Semua Model"
-        with c3:
-            f_cat = st.pills("Category", ["Produksi","QIS","Semua"], default="Produksi",
-                             key="pred_cat", label_visibility="collapsed",
-                             selection_mode="single") or "Produksi"
-        with c4:
-            rule_opts = ["Semua"] + [f"Rule {i}" for i in range(1,8)]
-            f_rule = st.pills("Rule", rule_opts, default="Semua",
-                              key="pred_rule", label_visibility="collapsed",
-                              selection_mode="single") or "Semua"
+        # ── Filter Baris 1: Part·Model | Kategori  (selectbox cascade) ──
+        spc_combos = (
+            self.df_all[["PartName","ModelName"]].dropna().drop_duplicates()
+            .sort_values(["PartName","ModelName"])
+        )
+        spc_combo_opts = ["— Semua Part & Model —"] + [
+            f"{r.PartName} · {r.ModelName}" for _, r in spc_combos.iterrows()
+        ]
+        if st.session_state.get("pred_combo") not in spc_combo_opts:
+            st.session_state["pred_combo"] = "— Semua Part & Model —"
+
+        cur_spc_combo = st.session_state.get("pred_combo", "— Semua Part & Model —")
+        df_spc_combo  = self.df_all.copy()
+        if cur_spc_combo != "— Semua Part & Model —":
+            _sp = cur_spc_combo.split(" · ", 1)
+            if len(_sp) == 2:
+                df_spc_combo = self.df_all[(self.df_all["PartName"]==_sp[0])&(self.df_all["ModelName"]==_sp[1])]
+
+        cat_spc_vals = sorted(df_spc_combo["Category"].dropna().unique().tolist()) if "Category" in df_spc_combo.columns else []
+        cat_spc_opts = ["Semua Kategori"] + cat_spc_vals
+        if st.session_state.get("pred_cat") not in cat_spc_opts:
+            st.session_state["pred_cat"] = "Produksi" if "Produksi" in cat_spc_opts else "Semua Kategori"
+
+        spc_r1c1, spc_r1c2 = st.columns([2.5, 1.5], gap="small")
+        with spc_r1c1:
+            f_spc_combo = st.selectbox("🔩 Part · Model", spc_combo_opts, key="pred_combo")
+        with spc_r1c2:
+            f_cat = st.selectbox("🏷 Kategori", cat_spc_opts, key="pred_cat")
+
+        # ── Filter Baris 2: Rule (tetap pills) ──
+        st.markdown('<div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">📏 Filter Rule SPC</div>', unsafe_allow_html=True)
+        rule_opts = ["Semua Rule"] + [f"Rule {i}" for i in range(1,8)]
+        f_rule = st.pills(
+            "Rule", rule_opts, default="Semua Rule",
+            key="pred_rule", label_visibility="collapsed",
+            selection_mode="single",
+        ) or "Semua Rule"
+
+        # Pecah combo → part & model
+        f_part, f_model = "Semua Part", "Semua Model"
+        if f_spc_combo != "— Semua Part & Model —":
+            _sp = f_spc_combo.split(" · ", 1)
+            if len(_sp) == 2:
+                f_part, f_model = _sp[0], _sp[1]
 
         # ── Session state cache untuk deteksi kendali ─────────────────────
         import time as _time
@@ -772,7 +861,7 @@ class PredictivePage:
                 df_src = df_src[df_src["PartName"] == f_part]
             if f_model != "Semua Model":
                 df_src = df_src[df_src["ModelName"] == f_model]
-            if f_cat != "Semua" and "Category" in df_src.columns:
+            if f_cat != "Semua Kategori" and "Category" in df_src.columns:
                 df_src = df_src[df_src["Category"] == f_cat]
             with st.spinner("Mendeteksi kondisi proses di luar kendali..."):
                 st.session_state[nelson_key] = _build_kendali_history(df_src)
@@ -784,7 +873,7 @@ class PredictivePage:
             st.success("Tidak ada kondisi proses di luar kendali yang terdeteksi.")
             return
 
-        if f_rule != "Semua":
+        if f_rule != "Semua Rule":
             r_num = int(f_rule.split(" ")[1])
             df_hist = df_hist[df_hist["Rule"] == r_num]
         if df_hist.empty:
@@ -908,9 +997,15 @@ class PredictivePage:
                         f'padding:1px 8px;font-size:10px;font-weight:700;">{sev}</span>'
                         f'</div>'
                         f'<div style="font-size:12px;color:#1E293B;line-height:1.5;font-weight:500;">{desc}</div>'
-                        f'<div style="margin-top:8px;padding:6px 8px;background:rgba(255,255,255,0.6);'
-                        f'border-radius:4px;font-size:10px;color:#94A3B8;text-align:center;'
-                        f'border:1px dashed {clr}66;">ilustrasi</div>'
+                        f'<div style="margin-top:8px;border-radius:6px;overflow:hidden;'
+                        f'border:1px dashed {clr}66;background:#F8FAFC;'
+                        f'height:80px;display:flex;align-items:center;justify-content:center;">'
+                        f'<img src="assets/ilustrasi/spc_rule_{r_num}.jpg" '
+                        f'onerror="this.style.display=\'none\';this.parentElement.innerHTML='
+                        f'\'<span style=\\"font-size:10px;color:#CBD5E1;\\">'
+                        f'📷 Rule {r_num} — ilustrasi belum tersedia</span>\';" '
+                        f'style="max-width:100%;max-height:78px;object-fit:contain;" alt="Rule {r_num}"/>'
+                        f'</div>'
                         f'</div>',
                         unsafe_allow_html=True
                     )
