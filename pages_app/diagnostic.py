@@ -203,90 +203,177 @@ class DiagnosticPage:
         from datetime import date, timedelta
         df = self.df_all
 
-        cat_opts = (["All"] + sorted(df["Category"].dropna().unique().tolist())
-                    if "Category" in df.columns else ["All", "Produksi", "QIS"])
+        # ── BARIS 1: Time | Shift | Category | KP  (semua selectbox) ─
+        col_r1 = st.columns([1.6, 1.2, 1.4, 1.2], gap="small")
 
-        # Baris 1: Time | Shift | Category | KP
-        col_r1 = st.columns([2.2, 1.4, 1.6, 1], gap="small")
         with col_r1[0]:
-            t_pill = st.pills("Time", ["Today", "7H", "30H", "All", "Custom"],
-                default="All", key="diag_time_pill",
-                label_visibility="collapsed", selection_mode="single") or "All"
+            time_opts = ["All", "Today", "7H", "30H"]
+            f_time = st.selectbox(
+                "Periode", time_opts,
+                key="diag_time_sel",
+                label_visibility="collapsed",
+            )
+
         with col_r1[1]:
-            s_pill = st.pills("Shift", ["All", "S1", "S2", "S3"],
-                default="All", key="diag_shift_pill",
-                label_visibility="collapsed", selection_mode="single") or "All"
+            shift_opts = ["All Shift", "Shift 1", "Shift 2", "Shift 3"]
+            f_shift = st.selectbox(
+                "Shift", shift_opts,
+                key="diag_shift_sel",
+                label_visibility="collapsed",
+            )
+
         with col_r1[2]:
-            cat_default = "Produksi" if "Produksi" in cat_opts else "All"
-            cat_pill = st.pills("Category", cat_opts, default=cat_default,
-                key="diag_cat_pill", label_visibility="collapsed",
-                selection_mode="single") or cat_default
+            cat_vals = sorted(df["Category"].dropna().unique().tolist()) if "Category" in df.columns else ["Produksi", "QIS"]
+            cat_default_val = "Produksi" if "Produksi" in cat_vals else cat_vals[0] if cat_vals else "All"
+            cat_opts = ["All"] + cat_vals
+            # reset state kalau nilainya tidak valid
+            if st.session_state.get("diag_cat_sel") not in cat_opts:
+                st.session_state["diag_cat_sel"] = cat_default_val
+            f_cat = st.selectbox(
+                "Category", cat_opts,
+                key="diag_cat_sel",
+                label_visibility="collapsed",
+            )
+
         with col_r1[3]:
-            kp_pill = st.pills("KP", ["All", "KP"],
-                default="All", key="diag_kp_pill",
-                label_visibility="collapsed", selection_mode="single") or "All"
+            kp_opts = ["All", "KP Only"]
+            f_kp = st.selectbox(
+                "KP", kp_opts,
+                key="diag_kp_sel",
+                label_visibility="collapsed",
+            )
 
-        # Baris 2: Part | Model (dinamis berdasarkan Category)
-        df_cat = df
-        if cat_pill != "All" and "Category" in df.columns:
-            df_cat = df[df["Category"] == cat_pill]
+        # ── Terapkan filter Time & Shift & Category ke df_base ────────
+        today = date.today()
+        df_base = df.copy()
+        if f_time == "Today":
+            df_base = df_base[df_base["Date"].dt.date == today]
+        elif f_time == "7H":
+            df_base = df_base[df_base["Date"].dt.date >= today - timedelta(days=6)]
+        elif f_time == "30H":
+            df_base = df_base[df_base["Date"].dt.date >= today - timedelta(days=29)]
 
-        part_opts = ["All"] + sorted(df_cat["PartName"].dropna().unique().tolist())
+        shift_val_map = {"Shift 1": "1", "Shift 2": "2", "Shift 3": "3"}
+        if f_shift != "All Shift":
+            df_base = df_base[df_base["Shift"].astype(str) == shift_val_map[f_shift]]
 
-        col_r2 = st.columns([1, 1], gap="small")
+        if f_cat != "All" and "Category" in df_base.columns:
+            df_base = df_base[df_base["Category"] == f_cat]
+
+        # ── BARIS 2: Part·Model (combo) | Ref/Point | Parameter ───────
+        # Combo Part · Model — dinamis dari df_base (sudah filter cat)
+        combos_df = (
+            df_base[["PartName", "ModelName"]]
+            .dropna().drop_duplicates()
+            .sort_values(["PartName", "ModelName"])
+        )
+        combo_opts = ["— All Part & Model —"] + [
+            f"{r.PartName} · {r.ModelName}" for _, r in combos_df.iterrows()
+        ]
+        cur_combo = st.session_state.get("diag_combo_sel", "— All Part & Model —")
+        if cur_combo not in combo_opts:
+            st.session_state["diag_combo_sel"] = "— All Part & Model —"
+
+        # Ref/Point options — dinamis dari combo yang dipilih
+        df_for_ref = df_base.copy()
+        cur_combo_val = st.session_state.get("diag_combo_sel", "— All Part & Model —")
+        if cur_combo_val != "— All Part & Model —":
+            parts_split = cur_combo_val.split(" · ", 1)
+            if len(parts_split) == 2:
+                df_for_ref = df_base[
+                    (df_base["PartName"] == parts_split[0]) &
+                    (df_base["ModelName"] == parts_split[1])
+                ]
+
+        param_col = "point" if "point" in df_for_ref.columns else "Parameter"
+        ref_col   = "ref"   if "ref"   in df_for_ref.columns else "ID"
+
+        ref_vals  = sorted([
+            r for r in df_for_ref[ref_col].dropna().astype(str).unique()
+            if r.strip() not in ("", "-", "nan")
+        ])
+        ref_opts  = ["All"] + ref_vals
+
+        # Parameter options — dinamis dari ref yang dipilih
+        cur_ref = st.session_state.get("diag_ref_sel", "All")
+        if cur_ref not in ref_opts:
+            st.session_state["diag_ref_sel"] = "All"
+            cur_ref = "All"
+
+        df_for_param = df_for_ref.copy()
+        if cur_ref != "All":
+            df_for_param = df_for_ref[df_for_ref[ref_col].astype(str) == cur_ref]
+
+        param_vals = sorted([
+            p for p in df_for_param[param_col].dropna().astype(str).unique()
+            if p.strip() not in ("", "-", "nan")
+        ])
+        param_opts = ["All"] + param_vals
+
+        cur_param = st.session_state.get("diag_param_sel", "All")
+        if cur_param not in param_opts:
+            st.session_state["diag_param_sel"] = "All"
+
+        col_r2 = st.columns([2, 1.2, 1.8], gap="small")
         with col_r2[0]:
-            current_part = st.session_state.get("diag_part_pill", "All")
-            if current_part not in part_opts:
-                st.session_state["diag_part_pill"] = "All"
-            part_pill = st.pills("Part", part_opts, default="All",
-                key="diag_part_pill", label_visibility="collapsed",
-                selection_mode="single") or "All"
-
-        # Model options dinamis berdasarkan Part yang dipilih
-        df_part = df_cat
-        if part_pill != "All":
-            df_part = df_cat[df_cat["PartName"] == part_pill]
-        model_opts = ["All"] + sorted(df_part["ModelName"].dropna().unique().tolist())
-
+            f_combo = st.selectbox(
+                "Part · Model", combo_opts,
+                key="diag_combo_sel",
+                label_visibility="collapsed",
+            )
         with col_r2[1]:
-            current_model = st.session_state.get("diag_model_pill", "All")
-            if current_model not in model_opts:
-                st.session_state["diag_model_pill"] = "All"
-            model_pill = st.pills("Model", model_opts, default="All",
-                key="diag_model_pill", label_visibility="collapsed",
-                selection_mode="single") or "All"
+            f_ref = st.selectbox(
+                "Ref / Point", ref_opts,
+                key="diag_ref_sel",
+                label_visibility="collapsed",
+            )
+        with col_r2[2]:
+            f_param = st.selectbox(
+                "Parameter", param_opts,
+                key="diag_param_sel",
+                label_visibility="collapsed",
+            )
 
-        # Baris 3: Status (opsional)
+        # ── BARIS 3: Status tetap pills ───────────────────────────────
         status_pill = "Open"
         if show_status:
-            status_pill = st.pills("Status", ["All"] + RC_STATUSES, default="Open",
-                key="diag_status_pill", label_visibility="collapsed",
-                selection_mode="single") or "Open"
+            status_pill = st.pills(
+                "Status", ["All"] + RC_STATUSES,
+                default="Open",
+                key="diag_status_pill",
+                label_visibility="collapsed",
+                selection_mode="single",
+            ) or "Open"
 
         st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
 
-        # Terapkan filter ke df
-        today = date.today()
-        if t_pill == "Today":
-            df = df[df["Date"].dt.date == today]
-        elif t_pill == "7H":
-            df = df[df["Date"].dt.date >= today - timedelta(days=6)]
-        elif t_pill == "30H":
-            df = df[df["Date"].dt.date >= today - timedelta(days=29)]
+        # ── Terapkan semua filter ke df_base ─────────────────────────
+        df_out = df_base.copy()
 
-        shift_map = {"S1": "1", "S2": "2", "S3": "3"}
-        if s_pill != "All":
-            df = df[df["Shift"].astype(str) == shift_map[s_pill]]
-        if cat_pill != "All" and "Category" in df.columns:
-            df = df[df["Category"] == cat_pill]
-        if part_pill != "All":
-            df = df[df["PartName"] == part_pill]
-        if model_pill != "All":
-            df = df[df["ModelName"] == model_pill]
-        if kp_pill == "KP" and "KP" in df.columns:
-            df = df[df["KP"].astype(str) == "1"]
+        # KP
+        if f_kp == "KP Only" and "KP" in df_out.columns:
+            df_out = df_out[df_out["KP"].astype(str) == "1"]
 
-        return df, status_pill
+        # Part · Model (dari combo)
+        f_part, f_model = "All", "All"
+        if f_combo != "— All Part & Model —":
+            parts_split = f_combo.split(" · ", 1)
+            if len(parts_split) == 2:
+                f_part, f_model = parts_split[0], parts_split[1]
+                df_out = df_out[
+                    (df_out["PartName"] == f_part) &
+                    (df_out["ModelName"] == f_model)
+                ]
+
+        # Ref / Point
+        if f_ref != "All":
+            df_out = df_out[df_out[ref_col].astype(str) == f_ref]
+
+        # Parameter
+        if f_param != "All":
+            df_out = df_out[df_out[param_col].astype(str) == f_param]
+
+        return df_out, status_pill
 
     # ── NG LIST — @st.fragment agar klik baris tidak re-run semua ─
     @st.fragment
@@ -565,27 +652,31 @@ class DiagnosticPage:
 
     # ── Helper: filter rcs sesuai filter pills ─────────────────────
     def _filter_rcs(self, rcs: list) -> list:
-        """Apply filter pills (time/shift/part/model) ke list root causes.
-        FIXED: baca key yang benar (diag_time_pill / diag_shift_pill).
-        """
+        """Apply filter selectbox (time/shift/part/model) ke list root causes."""
         from datetime import date, datetime, timedelta
 
-        t_pill     = st.session_state.get("diag_time_pill",  "All")
-        s_pill     = st.session_state.get("diag_shift_pill", "All")
-        part_pill  = st.session_state.get("diag_part_pill",  "All")
-        model_pill = st.session_state.get("diag_model_pill", "All")
+        f_time  = st.session_state.get("diag_time_sel",  "All")
+        f_shift = st.session_state.get("diag_shift_sel", "All Shift")
+        f_combo = st.session_state.get("diag_combo_sel", "— All Part & Model —")
+
+        # pecah combo → part & model
+        f_part, f_model = "All", "All"
+        if f_combo and f_combo != "— All Part & Model —":
+            parts_split = f_combo.split(" · ", 1)
+            if len(parts_split) == 2:
+                f_part, f_model = parts_split[0], parts_split[1]
 
         today = date.today()
-        if t_pill == "Today":
+        if f_time == "Today":
             start = today
-        elif t_pill == "7H":
+        elif f_time == "7H":
             start = today - timedelta(days=6)
-        elif t_pill == "30H":
+        elif f_time == "30H":
             start = today - timedelta(days=29)
         else:
             start = None
 
-        shift_map = {"S1": "1", "S2": "2", "S3": "3"}
+        shift_val_map = {"Shift 1": "1", "Shift 2": "2", "Shift 3": "3"}
 
         def _parse_date(s):
             try:
@@ -599,12 +690,12 @@ class DiagnosticPage:
                 d = _parse_date(r.get("date", ""))
                 if d is None or d < start:
                     continue
-            if s_pill != "All":
-                if str(r.get("shift", "")) != shift_map.get(s_pill, s_pill):
+            if f_shift != "All Shift":
+                if str(r.get("shift", "")) != shift_val_map.get(f_shift, f_shift):
                     continue
-            if part_pill != "All" and r.get("part", "") != part_pill:
+            if f_part != "All" and r.get("part", "") != f_part:
                 continue
-            if model_pill != "All" and r.get("model", "") != model_pill:
+            if f_model != "All" and r.get("model", "") != f_model:
                 continue
             out.append(r)
         return out
@@ -659,14 +750,13 @@ class DiagnosticPage:
         import time as _time
         df, _ = self._render_filters(show_status=False)
 
-        t      = st.session_state.get("diag_time_pill",  "All")
-        s      = st.session_state.get("diag_shift_pill", "All")
-        part   = st.session_state.get("diag_part_pill",  "All")
-        model  = st.session_state.get("diag_model_pill", "All")
-        TTL    = 300
+        t     = st.session_state.get("diag_time_sel",  "All")
+        s     = st.session_state.get("diag_shift_sel", "All Shift")
+        combo = st.session_state.get("diag_combo_sel", "— All Part & Model —")
+        TTL   = 300
 
         # Cache RC stats + TTL
-        stats_key = f"diag_stats_{t}_{s}_{part}_{model}"
+        stats_key = f"diag_stats_{t}_{s}_{combo}"
         ts_key    = f"{stats_key}_ts"
         dirty     = st.session_state.pop("diag_rc_dirty", False)
         if stats_key not in st.session_state or dirty or \
@@ -676,7 +766,7 @@ class DiagnosticPage:
             st.session_state[ts_key]    = _time.time()
 
         # Cache Shift x Param dari data aktual + TTL
-        sp_key    = f"diag_sp_{t}_{s}_{part}_{model}"
+        sp_key    = f"diag_sp_{t}_{s}_{combo}"
         sp_ts_key = f"{sp_key}_ts"
         if sp_key not in st.session_state or \
            _time.time() - st.session_state.get(sp_ts_key, 0) > TTL:
