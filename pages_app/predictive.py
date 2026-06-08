@@ -869,17 +869,13 @@ class PredictivePage:
         if st.session_state.get("pr_kp") not in kp_pr_opts:
             st.session_state["pr_kp"] = "Semua Titik"
 
-        pr_r1c1, pr_r1c2, pr_r1c3, pr_r1c4 = st.columns([2.5, 1.4, 1.1, 1.1], gap="small")
+        pr_r1c1, pr_r1c2, pr_r1c3 = st.columns([2.5, 1.4, 1.1], gap="small")
         with pr_r1c1:
             f_pr_combo = st.selectbox("🔩 Part · Model", combo_pr_opts, key="pr_combo")
         with pr_r1c2:
             f_pr_cat = st.selectbox("🏷 Kategori", cat_pr_opts, key="pr_cat")
         with pr_r1c3:
             f_pr_kp = st.selectbox("⚠ KP", kp_pr_opts, key="pr_kp")
-        with pr_r1c4:
-            n_hist = st.number_input("📊 Hist. (shift)", min_value=10, max_value=100,
-                                     value=20, step=5, key="pr_n_hist",
-                                     help="Jumlah data terakhir untuk hitung tren")
 
         # ── Filter Baris 2: SampleNo ──────────────────────────────
         df_pr_filt = df_pr_base.copy()
@@ -927,8 +923,13 @@ class PredictivePage:
         with pr_r2c3:
             f_pr_param = st.selectbox("📐 Parameter",   param_pr_opts, key="pr_param")
 
-        pr_r3c1, _ = st.columns([1.5, 3.5], gap="small")
+        # ── Input n_hist & n_fc berdampingan di bawah filter ─
+        pr_r3c1, pr_r3c2, _ = st.columns([1.5, 1.5, 2], gap="small")
         with pr_r3c1:
+            n_hist = st.number_input("📊 Data historis (shift)", min_value=10, max_value=100,
+                                     value=20, step=5, key="pr_n_hist",
+                                     help="Jumlah data terakhir untuk hitung tren")
+        with pr_r3c2:
             n_fc = st.number_input("🔭 Prediksi ke depan (shift)", min_value=1,
                                    max_value=50, value=10, step=1, key="pr_n_fc")
 
@@ -1203,14 +1204,34 @@ class PredictivePage:
                     break
             return {"value":round(v,5),"itemStyle":item}
 
+        RULE_DESC_SHORT = {
+            1:"R1: titik luar ±3σ",2:"R2: 8 titik 1 sisi",3:"R3: 7 titik tren",
+            4:"R4: 14 titik osilasi",5:"R5: 2/3 zona A",6:"R6: 4/5 zona B",
+            7:"R7: 15 titik zona C",
+        }
+
         def _pt_f(i, v):
-            base = "#EF4444" if (v>usl_d or v<lsl_d) else "#F59E0B"
-            item = {"color":base}
+            is_ng    = (v > usl_d or v < lsl_d)
+            rule_hit = None
             for r in [1,2,3,4,5,6,7]:
                 if (i+n_use) in vbr_c[r]:
-                    item = {"color":base,"borderColor":RC[r],"borderWidth":2.5}
+                    rule_hit = r
                     break
-            return {"value":round(float(v),5),"itemStyle":item}
+            # Warna: rule > NG > default kuning
+            if rule_hit:
+                dot_color = RC[rule_hit]
+            elif is_ng:
+                dot_color = "#EF4444"
+            else:
+                dot_color = "#F59E0B"
+            item = {"color": dot_color}
+            if rule_hit and is_ng:
+                item["borderColor"] = "#EF4444"
+                item["borderWidth"] = 2
+            tip  = RULE_DESC_SHORT.get(rule_hit,"") if rule_hit else ("NG" if is_ng else "")
+            val  = round(float(v), 5)
+            return {"value": val, "itemStyle": item,
+                    "tooltip": {"formatter": f"{val}" + (f"<br/><b style='color:{RC[rule_hit]};'>{tip}</b>" if rule_hit else ("  <b style='color:#EF4444;'>NG</b>" if is_ng else ""))}}
 
         pts_hist = [_pt_h(i,v) for i,v in enumerate(y_use)]
         pts_fc   = [_pt_f(i,v) for i,v in enumerate(y_fc)]
@@ -1884,7 +1905,8 @@ class PredictivePage:
                               "left": 12, "top": 8,
                               "textStyle": {"fontSize":13,"fontWeight":700,"color":"#0F172A"}},
                     "grid": {"top":50,"right":80,"bottom":55,"left":60},
-                    "tooltip": {"trigger":"axis","formatter":"{b}<br/>Aktual: <b>{c}</b>"},
+                    "tooltip": {"trigger":"item",
+                        "formatter": "function(p){ var d=p.data; if(typeof d==='object' && d.tooltip) return p.name+'<br/>Nilai: <b>'+d.value+'</b><br/>'+d.tooltip.formatter; return p.name+'<br/>Nilai: <b>'+(typeof d==='object'?d.value:d)+'</b>'; }"},
                     "xAxis": {"type":"category","data":x_labels,
                               "axisLabel":{"rotate":20,"fontSize":9,"interval":"auto"}},
                     "yAxis": {"type":"value","min":y_min_v,"max":y_max_v,"name":"Aktual",
