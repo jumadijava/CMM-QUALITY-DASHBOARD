@@ -144,17 +144,17 @@ def _build_kendali_history(df_all: pd.DataFrame) -> pd.DataFrame:
 import base64 as _b64_spc
 from pathlib import Path as _SpcPath
 
-_SPC_RULE_IMG_DIR = _SpcPath("assets/ilustrasi")
+_SPC_RULE_IMG_DIR = _SpcPath("assets/ilustrasi/rule")
 
 # Daftar nama file ilustrasi per rule — isi sesuai file yang tersedia
 _RULE_IMG_FILES = {
-    1: "spc_rule_1.jpg",
-    2: "spc_rule_2.jpg",
-    3: "spc_rule_3.jpg",
-    4: "spc_rule_4.jpg",
-    5: "spc_rule_5.jpg",
-    6: "spc_rule_6.jpg",
-    7: "spc_rule_7.jpg",
+    1: "spc_rule_1.png",
+    2: "spc_rule_2.png",
+    3: "spc_rule_3.png",
+    4: "spc_rule_4.png",
+    5: "spc_rule_5.png",
+    6: "spc_rule_6.png",
+    7: "spc_rule_7.png",
 }
 _RULE_IMG_CACHE: dict = {}
 
@@ -425,7 +425,7 @@ class PredictivePage:
         else:
             risk_html = (f'<span style="background:#DCFCE7;color:#16A34A;font-size:11px;'
                          f'font-weight:700;padding:3px 10px;border-radius:99px;">'
-                         f'✓ Tidak ada prediksi NG dalam {int(fc_n)} shift</span>')
+                         f'✓ Tidak ada prediksi NG dalam {int(fc_n)} shift berikutnya</span>')
 
         st.markdown(
             f'<div style="display:flex;justify-content:space-between;align-items:center;'
@@ -456,7 +456,7 @@ class PredictivePage:
             "grid": {"top": 16, "bottom": 44, "left": 56, "right": 80},
             "xAxis": {"type": "category",
                       "data": x_hist + x_fc,
-                      "axisLabel": {"formatter": "shift {value}", "fontSize": 9}},
+                      "axisLabel": {"formatter": "shift", "fontSize": 9}},
             "yAxis": {"type": "value", "min": y_min, "max": y_max,
                       "axisLabel": {"fontSize": 9}},
             "dataZoom": [{"type": "inside"}, {"type": "slider", "bottom": 8, "height": 16}],
@@ -470,16 +470,6 @@ class PredictivePage:
                  "itemStyle": {"color": "#F59E0B"},
                  "lineStyle": {"width": 2, "type": "dashed"},
                  "symbol": "none"},
-                {"name": "CI 95%", "type": "line",
-                 "data": [None]*hist_n + fc_hi,
-                 "lineStyle": {"opacity": 0},
-                 "areaStyle": {"color": "#F59E0B", "opacity": 0.15},
-                 "stack": "ci", "symbol": "none"},
-                {"name": "CI Low", "type": "line",
-                 "data": [None]*hist_n + fc_lo,
-                 "lineStyle": {"opacity": 0},
-                 "areaStyle": {"color": "#F59E0B", "opacity": 0},
-                 "stack": "ci", "symbol": "none"},
                 {"name": "USL", "type": "line",
                  "data": [usl_m] * (hist_n + int(fc_n)),
                  "lineStyle": {"color": "#EF4444", "width": 1, "type": "dashed"},
@@ -869,13 +859,17 @@ class PredictivePage:
         if st.session_state.get("pr_kp") not in kp_pr_opts:
             st.session_state["pr_kp"] = "Semua Titik"
 
-        pr_r1c1, pr_r1c2, pr_r1c3 = st.columns([2.5, 1.4, 1.1], gap="small")
+        pr_r1c1, pr_r1c2, pr_r1c3, pr_r1c4 = st.columns([2.5, 1.4, 1.1, 1.1], gap="small")
         with pr_r1c1:
             f_pr_combo = st.selectbox("🔩 Part · Model", combo_pr_opts, key="pr_combo")
         with pr_r1c2:
             f_pr_cat = st.selectbox("🏷 Kategori", cat_pr_opts, key="pr_cat")
         with pr_r1c3:
             f_pr_kp = st.selectbox("⚠ KP", kp_pr_opts, key="pr_kp")
+        with pr_r1c4:
+            n_hist = st.number_input("📊 Hist. (shift)", min_value=10, max_value=100,
+                                     value=20, step=5, key="pr_n_hist",
+                                     help="Jumlah data terakhir untuk hitung tren")
 
         # ── Filter Baris 2: SampleNo ──────────────────────────────
         df_pr_filt = df_pr_base.copy()
@@ -923,13 +917,8 @@ class PredictivePage:
         with pr_r2c3:
             f_pr_param = st.selectbox("📐 Parameter",   param_pr_opts, key="pr_param")
 
-        # ── Input n_hist & n_fc berdampingan di bawah filter ─
-        pr_r3c1, pr_r3c2, _ = st.columns([1.5, 1.5, 2], gap="small")
+        pr_r3c1, _ = st.columns([1.5, 3.5], gap="small")
         with pr_r3c1:
-            n_hist = st.number_input("📊 Data historis (shift)", min_value=10, max_value=100,
-                                     value=20, step=5, key="pr_n_hist",
-                                     help="Jumlah data terakhir untuk hitung tren")
-        with pr_r3c2:
             n_fc = st.number_input("🔭 Prediksi ke depan (shift)", min_value=1,
                                    max_value=50, value=10, step=1, key="pr_n_fc")
 
@@ -1204,34 +1193,14 @@ class PredictivePage:
                     break
             return {"value":round(v,5),"itemStyle":item}
 
-        RULE_DESC_SHORT = {
-            1:"R1: titik luar ±3σ",2:"R2: 8 titik 1 sisi",3:"R3: 7 titik tren",
-            4:"R4: 14 titik osilasi",5:"R5: 2/3 zona A",6:"R6: 4/5 zona B",
-            7:"R7: 15 titik zona C",
-        }
-
         def _pt_f(i, v):
-            is_ng    = (v > usl_d or v < lsl_d)
-            rule_hit = None
+            base = "#EF4444" if (v>usl_d or v<lsl_d) else "#F59E0B"
+            item = {"color":base}
             for r in [1,2,3,4,5,6,7]:
                 if (i+n_use) in vbr_c[r]:
-                    rule_hit = r
+                    item = {"color":base,"borderColor":RC[r],"borderWidth":2.5}
                     break
-            # Warna: rule > NG > default kuning
-            if rule_hit:
-                dot_color = RC[rule_hit]
-            elif is_ng:
-                dot_color = "#EF4444"
-            else:
-                dot_color = "#F59E0B"
-            item = {"color": dot_color}
-            if rule_hit and is_ng:
-                item["borderColor"] = "#EF4444"
-                item["borderWidth"] = 2
-            tip  = RULE_DESC_SHORT.get(rule_hit,"") if rule_hit else ("NG" if is_ng else "")
-            val  = round(float(v), 5)
-            return {"value": val, "itemStyle": item,
-                    "tooltip": {"formatter": f"{val}" + (f"<br/><b style='color:{RC[rule_hit]};'>{tip}</b>" if rule_hit else ("  <b style='color:#EF4444;'>NG</b>" if is_ng else ""))}}
+            return {"value":round(float(v),5),"itemStyle":item}
 
         pts_hist = [_pt_h(i,v) for i,v in enumerate(y_use)]
         pts_fc   = [_pt_f(i,v) for i,v in enumerate(y_fc)]
@@ -1905,8 +1874,7 @@ class PredictivePage:
                               "left": 12, "top": 8,
                               "textStyle": {"fontSize":13,"fontWeight":700,"color":"#0F172A"}},
                     "grid": {"top":50,"right":80,"bottom":55,"left":60},
-                    "tooltip": {"trigger":"item",
-                        "formatter": "function(p){ var d=p.data; if(typeof d==='object' && d.tooltip) return p.name+'<br/>Nilai: <b>'+d.value+'</b><br/>'+d.tooltip.formatter; return p.name+'<br/>Nilai: <b>'+(typeof d==='object'?d.value:d)+'</b>'; }"},
+                    "tooltip": {"trigger":"axis","formatter":"{b}<br/>Aktual: <b>{c}</b>"},
                     "xAxis": {"type":"category","data":x_labels,
                               "axisLabel":{"rotate":20,"fontSize":9,"interval":"auto"}},
                     "yAxis": {"type":"value","min":y_min_v,"max":y_max_v,"name":"Aktual",
