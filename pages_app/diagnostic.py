@@ -217,56 +217,56 @@ class DiagnosticPage:
         col_r1 = st.columns([1.6, 1.2, 1.4, 1.2], gap="small")
 
         with col_r1[0]:
-            time_opts = ["All", "Today", "7H", "30H"]
+            time_opts = ["Semua Periode", "Hari Ini", "7 Hari Terakhir", "30 Hari Terakhir"]
             f_time = st.selectbox(
-                "Periode", time_opts,
+                "📅 Periode", time_opts,
                 key="diag_time_sel",
-                label_visibility="collapsed",
+                label_visibility="visible",
             )
 
         with col_r1[1]:
-            shift_opts = ["All Shift", "Shift 1", "Shift 2", "Shift 3"]
+            shift_opts = ["Semua Shift", "Shift 1", "Shift 2", "Shift 3"]
             f_shift = st.selectbox(
-                "Shift", shift_opts,
+                "🕐 Shift", shift_opts,
                 key="diag_shift_sel",
-                label_visibility="collapsed",
+                label_visibility="visible",
             )
 
         with col_r1[2]:
             cat_vals = sorted(df["Category"].dropna().unique().tolist()) if "Category" in df.columns else ["Produksi", "QIS"]
-            cat_default_val = "Produksi" if "Produksi" in cat_vals else cat_vals[0] if cat_vals else "All"
-            cat_opts = ["All"] + cat_vals
+            cat_default_val = "Produksi" if "Produksi" in cat_vals else cat_vals[0] if cat_vals else "Semua Kategori"
+            cat_opts = ["Semua Kategori"] + cat_vals
             if st.session_state.get("diag_cat_sel") not in cat_opts:
                 st.session_state["diag_cat_sel"] = cat_default_val
             f_cat = st.selectbox(
-                "Category", cat_opts,
+                "🏷 Kategori", cat_opts,
                 key="diag_cat_sel",
-                label_visibility="collapsed",
+                label_visibility="visible",
             )
 
         with col_r1[3]:
-            kp_opts = ["All", "KP Only"]
+            kp_opts = ["Semua Titik", "KP Only"]
             f_kp = st.selectbox(
-                "KP", kp_opts,
+                "⚠ Kritikal Point", kp_opts,
                 key="diag_kp_sel",
-                label_visibility="collapsed",
+                label_visibility="visible",
             )
 
         # ── Terapkan filter Time & Shift & Category ke df_base ────────
         today = date.today()
         df_base = df.copy()
-        if f_time == "Today":
+        if f_time == "Hari Ini":
             df_base = df_base[df_base["Date"].dt.date == today]
-        elif f_time == "7H":
+        elif f_time == "7 Hari Terakhir":
             df_base = df_base[df_base["Date"].dt.date >= today - timedelta(days=6)]
-        elif f_time == "30H":
+        elif f_time == "30 Hari Terakhir":
             df_base = df_base[df_base["Date"].dt.date >= today - timedelta(days=29)]
 
         shift_val_map = {"Shift 1": "1", "Shift 2": "2", "Shift 3": "3"}
-        if f_shift != "All Shift":
+        if f_shift != "Semua Shift":
             df_base = df_base[df_base["Shift"].astype(str) == shift_val_map[f_shift]]
 
-        if f_cat != "All" and "Category" in df_base.columns:
+        if f_cat != "Semua Kategori" and "Category" in df_base.columns:
             df_base = df_base[df_base["Category"] == f_cat]
 
         # ── BARIS 2: Part·Model | SampleNo | Ref/Point | Parameter ───
@@ -278,16 +278,16 @@ class DiagnosticPage:
             .dropna().drop_duplicates()
             .sort_values(["PartName", "ModelName"])
         )
-        combo_opts = ["— All Part & Model —"] + [
+        combo_opts = ["— Semua Part & Model —"] + [
             f"{r.PartName} · {r.ModelName}" for _, r in combos_df.iterrows()
         ]
         if st.session_state.get("diag_combo_sel") not in combo_opts:
-            st.session_state["diag_combo_sel"] = "— All Part & Model —"
+            st.session_state["diag_combo_sel"] = "— Semua Part & Model —"
 
         # df setelah combo terpilih (untuk downstream options)
-        cur_combo_val = st.session_state.get("diag_combo_sel", "— All Part & Model —")
+        cur_combo_val = st.session_state.get("diag_combo_sel", "— Semua Part & Model —")
         df_after_combo = df_base.copy()
-        if cur_combo_val != "— All Part & Model —":
+        if cur_combo_val != "— Semua Part & Model —":
             _sp = cur_combo_val.split(" · ", 1)
             if len(_sp) == 2:
                 df_after_combo = df_base[
@@ -300,14 +300,14 @@ class DiagnosticPage:
             df_after_combo["SampleNo"].dropna().astype(str).unique().tolist(),
             key=lambda s: (0, int(s)) if s.isdigit() else (1, s)
         )
-        sno_opts = ["All"] + sno_vals
+        sno_opts = ["Semua Sample"] + sno_vals
         if st.session_state.get("diag_sno_sel") not in sno_opts:
-            st.session_state["diag_sno_sel"] = "All"
+            st.session_state["diag_sno_sel"] = "Semua Sample"
 
         # df setelah sampleno terpilih
-        cur_sno = st.session_state.get("diag_sno_sel", "All")
+        cur_sno = st.session_state.get("diag_sno_sel", "Semua Sample")
         df_after_sno = df_after_combo.copy()
-        if cur_sno != "All":
+        if cur_sno != "Semua Sample":
             df_after_sno = df_after_combo[df_after_combo["SampleNo"].astype(str) == cur_sno]
 
         # Ref / Point — dinamis dari sampleno
@@ -318,55 +318,60 @@ class DiagnosticPage:
             r for r in df_after_sno[ref_col].dropna().astype(str).unique()
             if r.strip() not in ("", "-", "nan")
         ])
-        ref_opts = ["All"] + ref_vals
+        ref_opts = ["Semua Ref / Point"] + ref_vals
         if st.session_state.get("diag_ref_sel") not in ref_opts:
-            st.session_state["diag_ref_sel"] = "All"
+            st.session_state["diag_ref_sel"] = "Semua Ref / Point"
 
         # Parameter — dinamis dari ref
-        cur_ref = st.session_state.get("diag_ref_sel", "All")
+        cur_ref = st.session_state.get("diag_ref_sel", "Semua Ref / Point")
         df_after_ref = df_after_sno.copy()
-        if cur_ref != "All":
+        if cur_ref != "Semua Ref / Point":
             df_after_ref = df_after_sno[df_after_sno[ref_col].astype(str) == cur_ref]
 
         param_vals = sorted([
             p for p in df_after_ref[param_col].dropna().astype(str).unique()
             if p.strip() not in ("", "-", "nan")
         ])
-        param_opts = ["All"] + param_vals
+        param_opts = ["Semua Parameter"] + param_vals
         if st.session_state.get("diag_param_sel") not in param_opts:
-            st.session_state["diag_param_sel"] = "All"
+            st.session_state["diag_param_sel"] = "Semua Parameter"
 
         col_r2 = st.columns([2, 1, 1.2, 1.8], gap="small")
         with col_r2[0]:
             f_combo = st.selectbox(
-                "Part · Model", combo_opts,
+                "🔩 Part · Model", combo_opts,
                 key="diag_combo_sel",
-                label_visibility="collapsed",
+                label_visibility="visible",
             )
         with col_r2[1]:
             f_sno = st.selectbox(
-                "Sample No", sno_opts,
+                "🔢 Sample No", sno_opts,
                 key="diag_sno_sel",
-                label_visibility="collapsed",
+                label_visibility="visible",
             )
         with col_r2[2]:
             f_ref = st.selectbox(
-                "Ref / Point", ref_opts,
+                "📍 Ref / Point", ref_opts,
                 key="diag_ref_sel",
-                label_visibility="collapsed",
+                label_visibility="visible",
             )
         with col_r2[3]:
             f_param = st.selectbox(
-                "Parameter", param_opts,
+                "📐 Parameter", param_opts,
                 key="diag_param_sel",
-                label_visibility="collapsed",
+                label_visibility="visible",
             )
 
         # ── BARIS 3: Status tetap pills ───────────────────────────────
         status_pill = "Open"
         if show_status:
+            st.markdown(
+                '<div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">🔖 Status Root Cause</div>',
+                unsafe_allow_html=True
+            )
             status_pill = st.pills(
-                "Status", ["All"] + RC_STATUSES,
+                "Status Root Cause",
+                ["Semua Status", "Open", "Investigated", "Resolved"],
                 default="Open",
                 key="diag_status_pill",
                 label_visibility="collapsed",
@@ -384,7 +389,7 @@ class DiagnosticPage:
 
         # Part · Model
         f_part, f_model = "All", "All"
-        if f_combo != "— All Part & Model —":
+        if f_combo != "— Semua Part & Model —":
             _sp = f_combo.split(" · ", 1)
             if len(_sp) == 2:
                 f_part, f_model = _sp[0], _sp[1]
@@ -394,15 +399,15 @@ class DiagnosticPage:
                 ]
 
         # SampleNo
-        if f_sno != "All":
+        if f_sno != "Semua Sample":
             df_out = df_out[df_out["SampleNo"].astype(str) == f_sno]
 
         # Ref / Point
-        if f_ref != "All":
+        if f_ref != "Semua Ref / Point":
             df_out = df_out[df_out[ref_col].astype(str) == f_ref]
 
         # Parameter
-        if f_param != "All":
+        if f_param != "Semua Parameter":
             df_out = df_out[df_out[param_col].astype(str) == f_param]
 
         return df_out, status_pill
@@ -436,7 +441,7 @@ class DiagnosticPage:
         pct     = round((n_inv + n_res) / n_total * 100) if n_total else 0
         bclr    = "#16A34A" if pct == 100 else "#3B82F6"
 
-        if status_filter != "All":
+        if status_filter != "Semua Status":
             df_ng = df_ng[df_ng["_status"] == status_filter]
         if df_ng.empty:
             st.info(f"Tidak ada NG dengan status **{status_filter}**.")
@@ -687,26 +692,26 @@ class DiagnosticPage:
         """Apply semua filter selectbox ke list root causes (Analytics & Riwayat)."""
         from datetime import date, datetime, timedelta
 
-        f_time  = st.session_state.get("diag_time_sel",  "All")
-        f_shift = st.session_state.get("diag_shift_sel", "All Shift")
-        f_combo = st.session_state.get("diag_combo_sel", "— All Part & Model —")
-        f_sno   = st.session_state.get("diag_sno_sel",   "All")
-        f_ref   = st.session_state.get("diag_ref_sel",   "All")
-        f_param = st.session_state.get("diag_param_sel", "All")
+        f_time  = st.session_state.get("diag_time_sel",  "Semua Periode")
+        f_shift = st.session_state.get("diag_shift_sel", "Semua Shift")
+        f_combo = st.session_state.get("diag_combo_sel", "— Semua Part & Model —")
+        f_sno   = st.session_state.get("diag_sno_sel",   "Semua Sample")
+        f_ref   = st.session_state.get("diag_ref_sel",   "Semua Ref / Point")
+        f_param = st.session_state.get("diag_param_sel", "Semua Parameter")
 
         # pecah combo → part & model
         f_part, f_model = "All", "All"
-        if f_combo and f_combo != "— All Part & Model —":
+        if f_combo and f_combo != "— Semua Part & Model —":
             _sp = f_combo.split(" · ", 1)
             if len(_sp) == 2:
                 f_part, f_model = _sp[0], _sp[1]
 
         today = date.today()
-        if f_time == "Today":
+        if f_time == "Hari Ini":
             start = today
-        elif f_time == "7H":
+        elif f_time == "7 Hari Terakhir":
             start = today - timedelta(days=6)
-        elif f_time == "30H":
+        elif f_time == "30 Hari Terakhir":
             start = today - timedelta(days=29)
         else:
             start = None
@@ -725,18 +730,18 @@ class DiagnosticPage:
                 d = _parse_date(r.get("date", ""))
                 if d is None or d < start:
                     continue
-            if f_shift != "All Shift":
+            if f_shift != "Semua Shift":
                 if str(r.get("shift", "")) != shift_val_map.get(f_shift, f_shift):
                     continue
             if f_part != "All" and r.get("part", "") != f_part:
                 continue
             if f_model != "All" and r.get("model", "") != f_model:
                 continue
-            if f_sno != "All" and str(r.get("sampleno", "")) != f_sno:
+            if f_sno != "Semua Sample" and str(r.get("sampleno", "")) != f_sno:
                 continue
-            if f_ref != "All" and str(r.get("ref", "")) != f_ref:
+            if f_ref != "Semua Ref / Point" and str(r.get("ref", "")) != f_ref:
                 continue
-            if f_param != "All" and str(r.get("parameter", "")) != f_param:
+            if f_param != "Semua Parameter" and str(r.get("parameter", "")) != f_param:
                 continue
             out.append(r)
         return out
