@@ -1,0 +1,38 @@
+{
+  "part": "MISSION CASE",
+  "model_name": "K60",
+  "sample_nos": [
+    "3",
+    "4L",
+    "4R"
+  ],
+  "scenario": "A",
+  "features": [
+    "Shift",
+    "Cycle",
+    "KP",
+    "Nominal",
+    "Uppertol",
+    "Lowertol",
+    "TolRange",
+    "TolMidpoint",
+    "DayOfWeek",
+    "Hour",
+    "DayOfMonth",
+    "WeekOfYear",
+    "PartName_enc",
+    "ModelName_enc",
+    "SampleNo_enc",
+    "CMMName_enc",
+    "Parameter_enc",
+    "Category_enc",
+    "ref_enc",
+    "point_enc"
+  ],
+  "optimal_threshold": 0.5500000000000002,
+  "roc_auc": 0.9700120048019208,
+  "f1_ng": 0.8840579710144928,
+  "n_train": 5443,
+  "n_test": 1361,
+  "scale_pos_weight": 7.850406504065041
+}
