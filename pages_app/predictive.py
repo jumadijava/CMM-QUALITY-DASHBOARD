@@ -900,18 +900,47 @@ class PredictivePage:
         if st.session_state.get("pr_sno") not in sno_pr_opts:
             st.session_state["pr_sno"] = "Semua Sample"
 
-        pr_r2c1, pr_r2c2 = st.columns([1.5, 3.5], gap="small")
+        pr_r2c1, pr_r2c2, pr_r2c3 = st.columns([1.2, 1.5, 2.5], gap="small")
         with pr_r2c1:
             f_pr_sno = st.selectbox("🔢 Sample No", sno_pr_opts, key="pr_sno")
-        with pr_r2c2:
-            n_fc = st.number_input("🔭 Prediksi ke depan (shift)", min_value=1,
-                                   max_value=50, value=10, step=1, key="pr_n_fc")
 
         if f_pr_sno != "Semua Sample":
             df_pr_filt = df_pr_filt[df_pr_filt["SampleNo"].astype(str)==f_pr_sno]
 
+        # Ref / Point & Parameter cascade dari sno
+        ref_pr_vals = sorted([r for r in df_pr_filt[ref_col].dropna().astype(str).unique()
+                              if r not in ("","-","nan")])
+        ref_pr_opts = ["Semua Ref / Point"] + ref_pr_vals
+        if st.session_state.get("pr_ref") not in ref_pr_opts:
+            st.session_state["pr_ref"] = "Semua Ref / Point"
+
+        cur_pr_ref    = st.session_state.get("pr_ref", "Semua Ref / Point")
+        df_pr_ref_tmp = df_pr_filt[df_pr_filt[ref_col].astype(str)==cur_pr_ref] if cur_pr_ref != "Semua Ref / Point" else df_pr_filt
+        param_pr_vals = sorted([p for p in df_pr_ref_tmp[param_col].dropna().astype(str).unique()
+                                if p not in ("","-","nan")])
+        param_pr_opts = ["Semua Parameter"] + param_pr_vals
+        if st.session_state.get("pr_param") not in param_pr_opts:
+            st.session_state["pr_param"] = "Semua Parameter"
+
+        with pr_r2c2:
+            f_pr_ref   = st.selectbox("📍 Ref / Point", ref_pr_opts, key="pr_ref")
+        with pr_r2c3:
+            f_pr_param = st.selectbox("📐 Parameter",   param_pr_opts, key="pr_param")
+
+        pr_r3c1, _ = st.columns([1.5, 3.5], gap="small")
+        with pr_r3c1:
+            n_fc = st.number_input("🔭 Prediksi ke depan (shift)", min_value=1,
+                                   max_value=50, value=10, step=1, key="pr_n_fc")
+
+        if f_pr_ref != "Semua Ref / Point":
+            df_pr_filt = df_pr_filt[df_pr_filt[ref_col].astype(str)==f_pr_ref]
+        if f_pr_param != "Semua Parameter":
+            df_pr_filt = df_pr_filt[df_pr_filt[param_col].astype(str)==f_pr_param]
+
         # ── Cache key — scan ulang kalau filter berubah ───────────
-        cache_key = f"pr_result_{f_pr_combo}_{f_pr_cat}_{f_pr_kp}_{f_pr_sno}_{int(n_hist)}_{int(n_fc)}"
+        f_pr_ref_k   = st.session_state.get("pr_ref",   "Semua Ref / Point")
+        f_pr_param_k = st.session_state.get("pr_param", "Semua Parameter")
+        cache_key = f"pr_result_{f_pr_combo}_{f_pr_cat}_{f_pr_kp}_{f_pr_sno}_{f_pr_ref_k}_{f_pr_param_k}_{int(n_hist)}_{int(n_fc)}"
         ts_key    = f"{cache_key}_ts"
         TTL       = 300
 
@@ -1114,112 +1143,227 @@ class PredictivePage:
         sel_rows = sel.selection.rows if sel and hasattr(sel, "selection") else []
         if not sel_rows:
             return
-
         row_idx = sel_rows[0]
         if row_idx >= len(rows_show):
             return
-        row = rows_show[df_res.index[row_idx]]   # pakai index asli setelah sort
+        row    = rows_show[df_res.index[row_idx]]
+        y_use  = row["_y_use"]
+        y_fc   = row["_y_fc"]
+        usl_d  = row["_usl"]
+        lsl_d  = row["_lsl"]
+        nom_d  = row["_nom"]
+        vbr_c  = row["_vbr"]
+        n_use  = row["_n_use"]
 
-        y_use      = row["_y_use"]
-        y_fc       = row["_y_fc"]
-        usl        = row["_usl"]
-        lsl        = row["_lsl"]
-        nom        = row["_nom"]
-        vbr_c      = row["_vbr"]
-        n_use      = row["_n_use"]
+        RC  = {1:"#EF4444",2:"#F59E0B",3:"#8B5CF6",
+               4:"#06B6D4",5:"#10B981",6:"#F97316",7:"#3B82F6"}
+
+        # Mean/sigma historis → UCL/LCL
+        mean_v  = float(np.mean(y_use))
+        sigma_v = float(np.std(y_use, ddof=1)) if n_use > 1 else 0.0
+        ucl_v   = round(mean_v + 3*sigma_v, 5)
+        lcl_v   = round(mean_v - 3*sigma_v, 5)
+
+        # Style titik historis — border warna rule
+        series_hist = []
+        for i, v in enumerate(y_use):
+            st_item = {"color":"#6366F1"}
+            for r in [1,2,3,4,5,6,7]:
+                if i in vbr_c[r]:
+                    st_item = {"color":"#6366F1","borderColor":RC[r],"borderWidth":2.5}
+                    break
+            series_hist.append({"value":round(v,5),"itemStyle":st_item})
+
+        # Style titik forecast — isi merah kalau NG, border warna rule
+        series_fc = []
+        for i, v in enumerate(y_fc):
+            base_c = "#EF4444" if (v > usl_d or v < lsl_d) else "#F59E0B"
+            st_item = {"color":base_c}
+            for r in [1,2,3,4,5,6,7]:
+                if (i + n_use) in vbr_c[r]:
+                    st_item = {"color":base_c,"borderColor":RC[r],"borderWidth":2.5}
+                    break
+            series_fc.append({"value":round(float(v),5),"itemStyle":st_item})
+
+        # Tren line
+        x_arr = np.arange(n_use)
+        sv, iv = np.polyfit(x_arr, y_use, 1)
+        trend_h = [round(float(sv*i+iv),5) for i in range(n_use)]
+        trend_f = [round(float(v),5) for v in y_fc]
+
+        # Y range
+        all_v = y_use + y_fc + [ucl_v,lcl_v,usl_d,lsl_d,nom_d]
+        y_pad = (max(all_v)-min(all_v))*0.1 or sigma_v*0.5 or 0.01
+        y_min = round(min(all_v)-y_pad,5)
+        y_max = round(max(all_v)+y_pad,5)
+
+        x_all = [f"H{i+1}" for i in range(n_use)] + [f"F+{i+1}" for i in range(len(y_fc))]
+
+        mark_lines = [
+            {"yAxis":ucl_v,"lineStyle":{"color":"#EF4444","width":1,"type":"dashed"},
+             "label":{"formatter":f"UCL {ucl_v}","fontSize":9,"color":"#EF4444"}},
+            {"yAxis":lcl_v,"lineStyle":{"color":"#EF4444","width":1,"type":"dashed"},
+             "label":{"formatter":f"LCL {lcl_v}","fontSize":9,"color":"#EF4444"}},
+            {"yAxis":usl_d,"lineStyle":{"color":"#EF4444","width":2,"type":"solid"},
+             "label":{"formatter":f"USL {usl_d}","fontSize":10,"color":"#EF4444"}},
+            {"yAxis":lsl_d,"lineStyle":{"color":"#EF4444","width":2,"type":"solid"},
+             "label":{"formatter":f"LSL {lsl_d}","fontSize":10,"color":"#EF4444"}},
+            {"yAxis":nom_d,"lineStyle":{"color":"#22C55E","width":1.5,"type":"dashed"},
+             "label":{"formatter":f"Nom {nom_d}","fontSize":10,"color":"#22C55E"}},
+        ]
 
         st.markdown(
-            f'<div style="font-size:13px;font-weight:700;color:#0F172A;margin:16px 0 6px;">'            f'Grafik Tren + Prediksi — {row["Ref"]} · {row["Parameter"]} · Sample {row["Sample"]}</div>',
+            f'<div style="font-size:13px;font-weight:700;color:#0F172A;margin:16px 0 6px;">'
+            f'Tren Kendali + Prediksi — {row["Ref"]} · {row["Parameter"]} · No.{row["Sample"]}</div>',
             unsafe_allow_html=True
         )
 
-        RC_CLR = {1:"#EF4444",2:"#F59E0B",3:"#8B5CF6",
-                  4:"#06B6D4",5:"#10B981",6:"#F97316",7:"#3B82F6"}
-
-        # Warnai titik historis
-        hist_pts = []
-        for i, v in enumerate(y_use):
-            style = {"color":"#6366F1"}
-            for r_num in [1,2,3,4,5,6,7]:
-                if i in vbr_c[r_num]:
-                    style = {"color":"#6366F1","borderColor":RC_CLR[r_num],"borderWidth":2.5}
-                    break
-            hist_pts.append({"value": round(v,5), "itemStyle": style})
-
-        # Warnai titik forecast
-        fc_pts = []
-        for i, v in enumerate(y_fc):
-            is_ng  = v > usl or v < lsl
-            base_c = "#EF4444" if is_ng else "#F59E0B"
-            style  = {"color": base_c}
-            for r_num in [1,2,3,4,5,6,7]:
-                if (i + n_use) in vbr_c[r_num]:
-                    style = {"color": base_c, "borderColor": RC_CLR[r_num], "borderWidth": 2.5}
-                    break
-            fc_pts.append({"value": round(float(v),5), "itemStyle": style})
-
-        # Tren line
-        x_arr   = np.arange(n_use)
-        slope_v, intercept_v = np.polyfit(x_arr, y_use, 1)
-        trend_h = [round(float(slope_v*i+intercept_v),5) for i in range(n_use)]
-        trend_f = [round(float(v),5) for v in y_fc]
-
-        all_v   = y_use + y_fc + [usl, lsl]
-        y_pad   = (max(all_v)-min(all_v))*0.15 or 0.01
-        y_min   = round(min(all_v)-y_pad, 5)
-        y_max   = round(max(all_v)+y_pad, 5)
-
-        x_hist_lbl = [f"H{i+1}" for i in range(n_use)]
-        x_fc_lbl   = [f"F+{i+1}" for i in range(len(y_fc))]
-        x_all      = x_hist_lbl + x_fc_lbl
-
-        mark_lines = [
-            {"yAxis": usl, "lineStyle": {"color":"#EF4444","width":2,"type":"solid"},
-             "label": {"formatter":f"USL {usl}","fontSize":10,"color":"#EF4444"}},
-            {"yAxis": lsl, "lineStyle": {"color":"#EF4444","width":2,"type":"solid"},
-             "label": {"formatter":f"LSL {lsl}","fontSize":10,"color":"#EF4444"}},
-            {"yAxis": nom, "lineStyle": {"color":"#22C55E","width":1.5,"type":"dashed"},
-             "label": {"formatter":f"Nom {nom}","fontSize":10,"color":"#22C55E"}},
-        ]
+        # Legend warna — persis SPC
+        st.markdown("""
+        <div style="display:flex;flex-wrap:wrap;gap:14px;font-size:11px;
+                    color:#64748B;margin-bottom:6px;">
+          <span>&#8943; <span style="color:#EF4444;">dashed</span> UCL/LCL (3&sigma;)</span>
+          <span style="color:#6366F1;">&#9711;</span> Historis &nbsp;
+          <span style="color:#F59E0B;">&#9711;</span> Forecast OK &nbsp;
+          <span style="color:#EF4444;">&#9711;</span> Forecast NG &nbsp;|
+          <span style="color:#EF4444;">&#9711;</span> R1 &nbsp;
+          <span style="color:#F59E0B;">&#9711;</span> R2 &nbsp;
+          <span style="color:#8B5CF6;">&#9711;</span> R3 &nbsp;
+          <span style="color:#06B6D4;">&#9711;</span> R4 &nbsp;
+          <span style="color:#10B981;">&#9711;</span> R5 &nbsp;
+          <span style="color:#F97316;">&#9711;</span> R6 &nbsp;
+          <span style="color:#3B82F6;">&#9711;</span> R7
+        </div>
+        """, unsafe_allow_html=True)
 
         st_echarts({
-            "grid": {"top":48,"right":90,"bottom":50,"left":65},
-            "tooltip": {"trigger":"axis"},
-            "legend": {"data":["Aktual","Tren","Forecast"],"bottom":0,"icon":"circle","itemWidth":8},
+            "title": {"text": f'Tren — {row["Ref"]} · {row["Parameter"]} · No.{row["Sample"]}',
+                      "left":12,"top":8,
+                      "textStyle":{"fontSize":13,"fontWeight":700,"color":"#0F172A"}},
+            "grid": {"top":50,"right":80,"bottom":55,"left":60},
+            "tooltip": {"trigger":"axis","formatter":"{b}<br/>Aktual: <b>{c}</b>"},
             "xAxis": {"type":"category","data":x_all,
-                      "axisLabel":{"rotate":25,"fontSize":8,"interval":"auto"}},
-            "yAxis": {"type":"value","min":y_min,"max":y_max,
-                      "axisLabel":{"fontSize":9},
+                      "axisLabel":{"rotate":20,"fontSize":9,"interval":"auto"}},
+            "yAxis": {"type":"value","min":y_min,"max":y_max,"name":"Aktual",
+                      "axisLabel":{"fontSize":10},
                       "splitLine":{"lineStyle":{"color":"#F1F5F9","type":"dashed"}}},
-            "dataZoom": [{"type":"inside"},{"type":"slider","bottom":8,"height":16}],
+            "dataZoom": [{"type":"inside","start":0,"end":100},
+                         {"type":"slider","bottom":8,"height":16}],
+            "legend": {"data":["Aktual","Forecast","Tren"],"bottom":28,"icon":"circle",
+                       "itemWidth":8,"textStyle":{"fontSize":10}},
             "series": [
                 {"name":"Aktual","type":"line",
-                 "data": hist_pts + [None]*len(y_fc),
-                 "symbol":"circle","symbolSize":7,
+                 "data": series_hist + [None]*len(y_fc),
+                 "symbol":"circle","symbolSize":8,
                  "lineStyle":{"color":"#6366F1","width":1.5},
                  "markLine":{"symbol":["none","none"],"silent":True,"data":mark_lines}},
+                {"name":"Forecast","type":"line",
+                 "data": [None]*n_use + series_fc,
+                 "symbol":"circle","symbolSize":8,
+                 "lineStyle":{"color":"#F59E0B","width":2,"type":"dashed"}},
                 {"name":"Tren","type":"line",
                  "data": trend_h + trend_f,
                  "symbol":"none",
                  "lineStyle":{"color":"#94A3B8","width":1.5,"type":"dotted"}},
-                {"name":"Forecast","type":"line",
-                 "data": [None]*n_use + fc_pts,
-                 "symbol":"circle","symbolSize":8,
-                 "lineStyle":{"color":"#F59E0B","width":2,"type":"dashed"}},
             ],
-        }, height="360px", key=f"pr_chart_{row['Ref']}_{row['Parameter']}_{row['Sample']}")
+        }, height="340px", key=f"pr_chart_{row['Ref']}_{row['Parameter']}_{row['Sample']}")
 
-        # Legend rule
-        st.markdown("""
-        <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:10px;color:#64748B;margin-top:4px;">
-          <span>Warna border titik = rule:</span>
-          <span style="color:#EF4444;">● R1</span><span style="color:#F59E0B;">● R2</span>
-          <span style="color:#8B5CF6;">● R3</span><span style="color:#06B6D4;">● R4</span>
-          <span style="color:#10B981;">● R5</span><span style="color:#F97316;">● R6</span>
-          <span style="color:#3B82F6;">● R7</span>
-          <span style="color:#EF4444;">■ Titik merah = NG forecast</span>
-        </div>
-        """, unsafe_allow_html=True)
+        # ── Kondisi Terdeteksi ────────────────────────────────────
+        KONTEKS = {
+            1: "Titik berada di luar batas kendali — indikasi penyebab khusus (special cause) yang perlu segera diinvestigasi.",
+            2: "Proses mengalami pergeseran dari nilai rata-rata — kemungkinan ada perubahan pada material, mesin, atau operator.",
+            3: "Tren naik atau turun secara konsisten — indikasi adanya drift pada proses, misalnya keausan alat.",
+            4: "Pola osilasi berlebihan — kemungkinan over-adjustment atau gangguan sistematis.",
+            5: "Peringatan dini pergeseran proses — dua dari tiga titik mendekati batas kendali.",
+            6: "Proses bergeser secara halus dari rata-rata — empat dari lima titik jauh dari pusat.",
+            7: "Proses terlalu konsisten di dekat rata-rata — kemungkinan stratifikasi data.",
+        }
+        triggered_hist = [r for r in range(1,8) if any(i < n_use  for i in vbr_c[r])]
+        triggered_fc   = [r for r in range(1,8) if any(i >= n_use for i in vbr_c[r])]
+        triggered_all  = sorted(set(triggered_hist)|set(triggered_fc))
+
+        if triggered_all:
+            st.markdown('<div style="font-size:12px;font-weight:700;color:#0F172A;'
+                        'margin:12px 0 6px;">Kondisi Terdeteksi</div>',
+                        unsafe_allow_html=True)
+            for r_num in triggered_all:
+                clr     = RC[r_num]
+                sev     = RULES[r_num]["severity"]
+                desc    = RULES[r_num]["desc"]
+                konteks = KONTEKS[r_num]
+                is_crit = sev == "Critical"
+                sev_bg  = "#FEE2E2" if is_crit else "#FEF3C7"
+                sev_clr = "#991B1B" if is_crit else "#92400E"
+                card_bg = "#FFF0F0" if is_crit else "#F5F7FF"
+                n_hv = len([i for i in vbr_c[r_num] if i < n_use])
+                n_fv = len([i for i in vbr_c[r_num] if i >= n_use])
+                if n_hv and n_fv:
+                    zone = f'<span style="background:#FEE2E2;color:#991B1B;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;">Historis + Prediksi</span>'
+                elif n_fv:
+                    zone = f'<span style="background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;">Prediksi</span>'
+                else:
+                    zone = f'<span style="background:#EFF6FF;color:#1D4ED8;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;">Historis</span>'
+                st.markdown(
+                    f'<div style="display:flex;align-items:flex-start;gap:12px;'
+                    f'background:{card_bg};border:1.5px solid {clr}66;border-left:5px solid {clr};'
+                    f'border-radius:10px;padding:12px 16px;margin-bottom:8px;'
+                    f'box-shadow:0 2px 8px rgba(0,0,0,0.07);">'
+                    f'<div style="min-width:64px;padding-top:1px;">'
+                    f'<span style="background:{clr};color:#fff;border-radius:6px;'
+                    f'padding:3px 10px;font-size:11px;font-weight:700;'
+                    f'white-space:nowrap;">Rule {r_num}</span></div>'
+                    f'<div style="flex:1;">'
+                    f'<div style="font-size:12px;color:#0F172A;font-weight:600;margin-bottom:3px;">'
+                    f'{desc}{zone}</div>'
+                    f'<div style="font-size:11px;color:#475569;margin-bottom:6px;line-height:1.5;">'
+                    f'{konteks}</div>'
+                    f'<div style="display:flex;gap:8px;font-size:11px;color:#64748B;">'
+                    f'<span>📍 {n_hv} historis · {n_fv} forecast</span>'
+                    f'<span style="color:#CBD5E1;">|</span>'
+                    f'<span style="background:{sev_bg};color:{sev_clr};'
+                    f'border-radius:4px;padding:1px 8px;font-weight:700;font-size:10px;">{sev}</span>'
+                    f'</div></div></div>',
+                    unsafe_allow_html=True
+                )
+
+        # ── Keterangan Kondisi Proses di Luar Kendali ─────────────
+        with st.expander("📋 Keterangan Kondisi Proses di Luar Kendali", expanded=False):
+            RULE_META_PR = [
+                (1,"#EF4444","Critical","Satu atau lebih titik data berada di luar batas kendali."),
+                (2,"#F59E0B","Warning", "Delapan titik data berurutan berada di satu sisi nilai rata-rata."),
+                (3,"#8B5CF6","Warning", "Tujuh titik data berturut-turut yang meningkat atau menurun."),
+                (4,"#06B6D4","Warning", "Empat belas titik data berurutan yang bergantian naik dan turun."),
+                (5,"#10B981","Warning", "Dua titik data dari tiga berurutan berada di zona A atau di luarnya di sisi yang sama dari rata-rata."),
+                (6,"#F97316","Warning", "Empat titik data dari lima berurutan berada di zona B atau lebih jauh di sisi yang sama dari rata-rata."),
+                (7,"#3B82F6","Warning", "Lima belas titik data berurutan berada dalam zona C (di atas dan di bawah rata-rata)."),
+            ]
+            cols_pr = st.columns(2)
+            for idx_pr, (r_num, clr, sev, desc) in enumerate(RULE_META_PR):
+                is_crit = sev == "Critical"
+                sev_bg  = "#FEE2E2" if is_crit else "#EFF6FF"
+                sev_clr = "#991B1B" if is_crit else "#1D4ED8"
+                card_bg = "#FFF0F0" if is_crit else "#F0F4FF"
+                with cols_pr[idx_pr % 2]:
+                    st.markdown(
+                        f'<div style="background:{card_bg};border:1.5px solid {clr}88;'
+                        f'border-left:5px solid {clr};border-radius:10px;'
+                        f'padding:12px 14px;margin-bottom:10px;'
+                        f'box-shadow:0 2px 8px rgba(0,0,0,0.08);">'
+                        f'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
+                        f'<span style="background:{clr};color:#fff;border-radius:6px;'
+                        f'padding:2px 10px;font-size:11px;font-weight:700;">Rule {r_num}</span>'
+                        f'<span style="background:{sev_bg};color:{sev_clr};border-radius:4px;'
+                        f'padding:1px 8px;font-size:10px;font-weight:700;">{sev}</span>'
+                        f'</div>'
+                        f'<div style="font-size:12px;color:#1E293B;line-height:1.5;font-weight:500;">{desc}</div>'
+                        f'</div>' +
+                        '<div style="margin-top:8px;border-radius:6px;overflow:hidden;'
+                        f'border:1px dashed {clr}66;background:#F8FAFC;'
+                        f'height:80px;display:flex;align-items:center;justify-content:center;">' +
+                        _get_rule_img_html(r_num, clr) +
+                        '</div>',
+                        unsafe_allow_html=True
+                    )
 
 
     def _run_batch_arima(self, cache_path):
