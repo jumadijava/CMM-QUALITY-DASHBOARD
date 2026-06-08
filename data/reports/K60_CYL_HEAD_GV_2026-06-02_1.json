@@ -1,0 +1,150 @@
+{
+  "id": "K60_CYL_HEAD_GV_2026-06-02_1",
+  "createdAt": "2026-06-07T21:48:25.965290",
+  "submittedBy": "CMM Auto",
+  "header": {
+    "unitProduksi": "MACHINING CYLINDER HEAD",
+    "namaPart": "CYL HEAD GV",
+    "noPart": "",
+    "line": "",
+    "shift": "1",
+    "tanggal": "02/06/2026",
+    "noDies": "",
+    "namaOperator": "",
+    "nrp": "",
+    "noDoc": "",
+    "tglBerlaku": "",
+    "partName": "CYL HEAD GV",
+    "modelName": "K60"
+  },
+  "items": [
+    {
+      "id": "Projection Angle Two Cylinder EX-",
+      "g": "M201",
+      "nm": "SUDUT",
+      "t": "CMM",
+      "nom": "21.0",
+      "tp": 0.167,
+      "tm": 0.167,
+      "kp": false,
+      "mv": null
+    },
+    {
+      "id": "X-Value Cylinder EX",
+      "g": "M201",
+      "nm": "POSISI SUMBU X",
+      "t": "CMM",
+      "nom": "0.0",
+      "tp": 0.05,
+      "tm": 0.05,
+      "kp": false,
+      "mv": null
+    },
+    {
+      "id": "Z-Value Cylinder EX",
+      "g": "M201",
+      "nm": "POSISI SUMBU Y",
+      "t": "CMM",
+      "nom": "0.0",
+      "tp": 0.05,
+      "tm": 0.05,
+      "kp": false,
+      "mv": null
+    },
+    {
+      "id": "Projection Angle Two Cylinder IN-",
+      "g": "M202",
+      "nm": "SUDUT",
+      "t": "CMM",
+      "nom": "21.0000003",
+      "tp": 0.167,
+      "tm": 0.167,
+      "kp": false,
+      "mv": null
+    },
+    {
+      "id": "X-Value Cylinder IN",
+      "g": "M202",
+      "nm": "POSISI SUMBU X",
+      "t": "CMM",
+      "nom": "0.0",
+      "tp": 0.1,
+      "tm": 0.1,
+      "kp": false,
+      "mv": null
+    },
+    {
+      "id": "Z-Value Cylinder IN",
+      "g": "M202",
+      "nm": "POSISI SUMBU Y",
+      "t": "CMM",
+      "nom": "0.0",
+      "tp": 0.1,
+      "tm": 0.1,
+      "kp": false,
+      "mv": null
+    }
+  ],
+  "samples": [
+    "F",
+    "B"
+  ],
+  "sample_order": [
+    "F",
+    "B"
+  ],
+  "measurements": {
+    "Projection Angle Two Cylinder EX-": {
+      "n1": "0.003",
+      "n2": "-0.0719"
+    },
+    "X-Value Cylinder EX": {
+      "n1": "-0.0188",
+      "n2": "-0.0004"
+    },
+    "Z-Value Cylinder EX": {
+      "n1": "-0.0302",
+      "n2": "0.0738"
+    },
+    "Projection Angle Two Cylinder IN-": {
+      "n1": "-0.1115",
+      "n2": "-0.0651"
+    },
+    "X-Value Cylinder IN": {
+      "n1": "-0.0601",
+      "n2": "-0.05"
+    },
+    "Z-Value Cylinder IN": {
+      "n1": "-0.0195",
+      "n2": "0.0525"
+    }
+  },
+  "deviation_measurements": {
+    "Projection Angle Two Cylinder EX-": {
+      "n1": "0.003",
+      "n2": "-0.0719"
+    },
+    "X-Value Cylinder EX": {
+      "n1": "-0.0188",
+      "n2": "-0.0004"
+    },
+    "Z-Value Cylinder EX": {
+      "n1": "-0.0302",
+      "n2": "0.0738"
+    },
+    "Projection Angle Two Cylinder IN-": {
+      "n1": "-0.1115",
+      "n2": "-0.0651"
+    },
+    "X-Value Cylinder IN": {
+      "n1": "-0.0601",
+      "n2": "-0.05"
+    },
+    "Z-Value Cylinder IN": {
+      "n1": "-0.0195",
+      "n2": "0.0525"
+    }
+  },
+  "ilustrasi_img": "",
+  "ilustrasi_path": ""
+}
