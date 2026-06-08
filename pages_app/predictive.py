@@ -139,6 +139,47 @@ def _build_kendali_history(df_all: pd.DataFrame) -> pd.DataFrame:
 
 
 # ─────────────────────────────────────────────────────────────────
+#  Helper: load ilustrasi rule SPC sebagai base64
+# ─────────────────────────────────────────────────────────────────
+import base64 as _b64_spc
+from pathlib import Path as _SpcPath
+
+_SPC_RULE_IMG_DIR = _SpcPath("assets/ilustrasi")
+
+# Daftar nama file ilustrasi per rule — isi sesuai file yang tersedia
+_RULE_IMG_FILES = {
+    1: "spc_rule_1.jpg",
+    2: "spc_rule_2.jpg",
+    3: "spc_rule_3.jpg",
+    4: "spc_rule_4.jpg",
+    5: "spc_rule_5.jpg",
+    6: "spc_rule_6.jpg",
+    7: "spc_rule_7.jpg",
+}
+_RULE_IMG_CACHE: dict = {}
+
+def _get_rule_img_html(r_num: int, border_clr: str) -> str:
+    """Return <img> tag base64 atau placeholder teks kalau file tidak ada."""
+    if r_num in _RULE_IMG_CACHE:
+        return _RULE_IMG_CACHE[r_num]
+    fname = _RULE_IMG_FILES.get(r_num, "")
+    path  = _SPC_RULE_IMG_DIR / fname if fname else None
+    if path and path.exists():
+        ext  = path.suffix.lower()
+        mime = "image/png" if ext == ".png" else "image/jpeg"
+        b64  = _b64_spc.b64encode(path.read_bytes()).decode()
+        html = (f'<img src="data:{mime};base64,{b64}" '
+                f'style="max-width:100%;max-height:78px;object-fit:contain;" '
+                f'alt="Rule {r_num}"/>')
+    else:
+        html = (f'<span style="font-size:10px;color:#CBD5E1;">'
+                f'📷 Rule {r_num} — tempatkan file <b>{fname or "spc_rule_"+str(r_num)+".jpg"}</b>'
+                f' di folder assets/ilustrasi/</span>')
+    _RULE_IMG_CACHE[r_num] = html
+    return html
+
+
+# ─────────────────────────────────────────────────────────────────
 #  Page Class
 # ─────────────────────────────────────────────────────────────────
 class PredictivePage:
@@ -168,7 +209,7 @@ class PredictivePage:
 
         ai_tab = st.segmented_control(
             "AI Tab",
-            ["🎯 Klasifikasi", "📈 Forecasting", "🔍 Anomaly", "💬 AI Insight"],
+            ["🎯 Klasifikasi", "📈 Forecasting", "📐 Prediksi Rule", "🔍 Anomaly", "💬 AI Insight"],
             default="🎯 Klasifikasi",
             key="pred_ai_tab",
             label_visibility="collapsed",
@@ -178,6 +219,8 @@ class PredictivePage:
             self._render_klasifikasi()
         elif ai_tab == "📈 Forecasting":
             self._render_forecasting()
+        elif ai_tab == "📐 Prediksi Rule":
+            self._render_prediksi_rule()
         else:
             st.markdown(
                 f'<div style="text-align:center;padding:80px 0;">'
@@ -620,6 +663,30 @@ class PredictivePage:
         if st.session_state.get("cls_sno") not in sno_cls_opts:
             st.session_state["cls_sno"] = "Semua Sample"
 
+        # ── KP → ref → param (cascade dari sno) ──────────────
+        cur_cls_sno = st.session_state.get("cls_sno", "Semua Sample")
+        df_cls_sno  = df_cls_cat[df_cls_cat["SampleNo"].astype(str)==cur_cls_sno] if cur_cls_sno != "Semua Sample" else df_cls_cat
+
+        _ref_col_cls   = "ref"   if "ref"   in df_cls_sno.columns else "PartName"
+        _param_col_cls = "point" if "point" in df_cls_sno.columns else "Parameter"
+
+        ref_cls_vals = sorted([r for r in df_cls_sno[_ref_col_cls].dropna().astype(str).unique() if r not in ("","-","nan")])
+        ref_cls_opts = ["Semua Ref / Point"] + ref_cls_vals
+        if st.session_state.get("cls_ref") not in ref_cls_opts:
+            st.session_state["cls_ref"] = "Semua Ref / Point"
+
+        cur_cls_ref  = st.session_state.get("cls_ref", "Semua Ref / Point")
+        df_cls_ref   = df_cls_sno[df_cls_sno[_ref_col_cls].astype(str)==cur_cls_ref] if cur_cls_ref != "Semua Ref / Point" else df_cls_sno
+
+        param_cls_vals = sorted([p for p in df_cls_ref[_param_col_cls].dropna().astype(str).unique() if p not in ("","-","nan")])
+        param_cls_opts = ["Semua Parameter"] + param_cls_vals
+        if st.session_state.get("cls_param") not in param_cls_opts:
+            st.session_state["cls_param"] = "Semua Parameter"
+
+        kp_cls_opts = ["Semua Titik", "KP Only"]
+        if st.session_state.get("cls_kp") not in kp_cls_opts:
+            st.session_state["cls_kp"] = "Semua Titik"
+
         cls_r2c1, cls_r2c2, cls_r2c3 = st.columns([2.5, 1.4, 1.2], gap="small")
         with cls_r2c1:
             f_combo_cls = st.selectbox("🔩 Part · Model", combo_cls_opts, key="cls_combo")
@@ -627,6 +694,14 @@ class PredictivePage:
             f_cat = st.selectbox("🏷 Kategori", cat_cls_opts, key="cls_cat")
         with cls_r2c3:
             f_sno_cls = st.selectbox("🔢 Sample No", sno_cls_opts, key="cls_sno")
+
+        cls_r3c1, cls_r3c2, cls_r3c3 = st.columns([1.2, 1.5, 2.5], gap="small")
+        with cls_r3c1:
+            f_kp_cls = st.selectbox("⚠ Kritikal Point", kp_cls_opts, key="cls_kp")
+        with cls_r3c2:
+            f_ref_cls = st.selectbox("📍 Ref / Point", ref_cls_opts, key="cls_ref")
+        with cls_r3c3:
+            f_param_cls = st.selectbox("📐 Parameter", param_cls_opts, key="cls_param")
 
         # Terapkan semua filter
         df_filtered = result.copy()
@@ -642,6 +717,12 @@ class PredictivePage:
             df_filtered = df_filtered[df_filtered["Category"]==f_cat]
         if f_sno_cls != "Semua Sample":
             df_filtered = df_filtered[df_filtered["SampleNo"].astype(str)==f_sno_cls]
+        if f_kp_cls == "KP Only" and "KP" in df_filtered.columns:
+            df_filtered = df_filtered[df_filtered["KP"].astype(str).isin(["1","1.0","True"])]
+        if f_ref_cls != "Semua Ref / Point" and _ref_col_cls in df_filtered.columns:
+            df_filtered = df_filtered[df_filtered[_ref_col_cls].astype(str)==f_ref_cls]
+        if f_param_cls != "Semua Parameter" and _param_col_cls in df_filtered.columns:
+            df_filtered = df_filtered[df_filtered[_param_col_cls].astype(str)==f_param_cls]
 
         df_show = df_filtered.copy()
 
@@ -671,11 +752,12 @@ class PredictivePage:
             st.error(f"⚠️ **{n_ng} titik** diprediksi NG pada "
                      f"Shift {next_shift} · {next_date.strftime('%d %b %Y')}")
 
-        sc = ["PartName","ModelName","ref","point","SampleNo","Prob_NG","Pred","Risiko"]
+        sc = ["PartName","ModelName","ref","point","SampleNo","KP","Prob_NG","Pred","Risiko"]
         sc = [c for c in sc if c in df_show.columns]
         df_tbl = df_show[sc].sort_values("Prob_NG", ascending=False).reset_index(drop=True)
-        df_tbl.columns = ["Part","Model","Ref","Parameter","SampleNo",
-                          "Prob NG (%)","Prediksi","Risiko"][:len(sc)]
+        _col_rename = {"PartName":"Part","ModelName":"Model","ref":"Ref","point":"Parameter",
+                       "SampleNo":"Sample No","KP":"KP","Prob_NG":"Prob NG (%)","Pred":"Prediksi","Risiko":"Risiko"}
+        df_tbl.columns = [_col_rename.get(c,c) for c in sc]
         st.dataframe(df_tbl, use_container_width=True, hide_index=True,
                      height=min(520, 42 + len(df_tbl)*36))
 
@@ -737,6 +819,408 @@ class PredictivePage:
         st.dataframe(df_show[cols_show].reset_index(drop=True),
                      use_container_width=True, hide_index=True,
                      height=min(500, 42 + len(df_show)*36))
+
+    # ═════════════════════════════════════════════════════════════════
+    #  📐 PREDIKSI RULE — Linear Trend + Toleransi
+    # ═════════════════════════════════════════════════════════════════
+    @st.fragment
+    # ═════════════════════════════════════════════════════════════════
+    #  📐 PREDIKSI RULE — Scan otomatis semua titik (pola Klasifikasi)
+    # ═════════════════════════════════════════════════════════════════
+    @st.fragment
+    def _render_prediksi_rule(self):
+        import numpy as np
+        import time as _time
+
+        df        = self.df_all
+        param_col = "point" if "point" in df.columns else "Parameter"
+        ref_col   = "ref"   if "ref"   in df.columns else "ID"
+
+        # ── Banner info ───────────────────────────────────────────
+        st.markdown(
+            '<div style="background:#F0FDF4;border-radius:8px;padding:12px 16px;'            'margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">'            '<div>'            '<div style="font-size:13px;font-weight:700;color:#166534;">📐 Prediksi Rule SPC — Linear Trend</div>'            '<div style="font-size:11px;color:#16A34A;margin-top:2px;">'            'Scan otomatis semua titik ukur · proyeksikan tren ke depan · deteksi rule sebelum terjadi</div>'            '</div><div style="font-size:22px;">📐</div></div>',
+            unsafe_allow_html=True
+        )
+
+        # ── Filter Baris 1: Part·Model | Kategori | KP ───────────
+        combos_pr = (
+            df[["PartName","ModelName"]].dropna().drop_duplicates()
+            .sort_values(["PartName","ModelName"])
+        )
+        combo_pr_opts = ["— Semua Part & Model —"] + [
+            f"{r.PartName} · {r.ModelName}" for _, r in combos_pr.iterrows()
+        ]
+        if st.session_state.get("pr_combo") not in combo_pr_opts:
+            st.session_state["pr_combo"] = "— Semua Part & Model —"
+
+        cur_pr_combo = st.session_state.get("pr_combo", "— Semua Part & Model —")
+        df_pr_base   = df.copy()
+        if cur_pr_combo != "— Semua Part & Model —":
+            _sp = cur_pr_combo.split(" · ", 1)
+            if len(_sp) == 2:
+                df_pr_base = df[(df["PartName"]==_sp[0])&(df["ModelName"]==_sp[1])]
+
+        cat_pr_vals = sorted(df_pr_base["Category"].dropna().unique().tolist()) if "Category" in df_pr_base.columns else []
+        cat_pr_opts = ["Semua Kategori"] + cat_pr_vals
+        if st.session_state.get("pr_cat") not in cat_pr_opts:
+            st.session_state["pr_cat"] = "Produksi" if "Produksi" in cat_pr_opts else "Semua Kategori"
+
+        kp_pr_opts = ["Semua Titik", "KP Only"]
+        if st.session_state.get("pr_kp") not in kp_pr_opts:
+            st.session_state["pr_kp"] = "Semua Titik"
+
+        pr_r1c1, pr_r1c2, pr_r1c3, pr_r1c4 = st.columns([2.5, 1.4, 1.1, 1.1], gap="small")
+        with pr_r1c1:
+            f_pr_combo = st.selectbox("🔩 Part · Model", combo_pr_opts, key="pr_combo")
+        with pr_r1c2:
+            f_pr_cat = st.selectbox("🏷 Kategori", cat_pr_opts, key="pr_cat")
+        with pr_r1c3:
+            f_pr_kp = st.selectbox("⚠ KP", kp_pr_opts, key="pr_kp")
+        with pr_r1c4:
+            n_hist = st.number_input("📊 Hist. (shift)", min_value=10, max_value=100,
+                                     value=20, step=5, key="pr_n_hist",
+                                     help="Jumlah data terakhir untuk hitung tren")
+
+        # ── Filter Baris 2: SampleNo ──────────────────────────────
+        df_pr_filt = df_pr_base.copy()
+        if f_pr_combo != "— Semua Part & Model —":
+            _sp = f_pr_combo.split(" · ", 1)
+            if len(_sp) == 2:
+                df_pr_filt = df_pr_base[(df_pr_base["PartName"]==_sp[0])&(df_pr_base["ModelName"]==_sp[1])]
+        if f_pr_cat != "Semua Kategori" and "Category" in df_pr_filt.columns:
+            df_pr_filt = df_pr_filt[df_pr_filt["Category"]==f_pr_cat]
+        if f_pr_kp == "KP Only" and "KP" in df_pr_filt.columns:
+            df_pr_filt = df_pr_filt[df_pr_filt["KP"].astype(str).isin(["1","1.0","True"])]
+
+        sno_pr_vals = sorted(
+            df_pr_filt["SampleNo"].dropna().astype(str).unique().tolist(),
+            key=lambda s: (0, int(s)) if s.isdigit() else (1, s)
+        )
+        sno_pr_opts = ["Semua Sample"] + sno_pr_vals
+        if st.session_state.get("pr_sno") not in sno_pr_opts:
+            st.session_state["pr_sno"] = "Semua Sample"
+
+        pr_r2c1, pr_r2c2 = st.columns([1.5, 3.5], gap="small")
+        with pr_r2c1:
+            f_pr_sno = st.selectbox("🔢 Sample No", sno_pr_opts, key="pr_sno")
+        with pr_r2c2:
+            n_fc = st.number_input("🔭 Prediksi ke depan (shift)", min_value=1,
+                                   max_value=50, value=10, step=1, key="pr_n_fc")
+
+        if f_pr_sno != "Semua Sample":
+            df_pr_filt = df_pr_filt[df_pr_filt["SampleNo"].astype(str)==f_pr_sno]
+
+        # ── Cache key — scan ulang kalau filter berubah ───────────
+        cache_key = f"pr_result_{f_pr_combo}_{f_pr_cat}_{f_pr_kp}_{f_pr_sno}_{int(n_hist)}_{int(n_fc)}"
+        ts_key    = f"{cache_key}_ts"
+        TTL       = 300
+
+        if cache_key not in st.session_state or            _time.time() - st.session_state.get(ts_key, 0) > TTL:
+
+            all_rows = []
+            group_keys = [col for col in ["PartName","ModelName","SampleNo", ref_col, param_col]
+                          if col in df_pr_filt.columns]
+
+            with st.spinner("🔍 Menghitung tren & prediksi rule semua titik..."):
+                for keys, grp in df_pr_filt.groupby(group_keys, sort=False):
+                    key_dict = dict(zip(group_keys, keys if isinstance(keys, tuple) else [keys]))
+                    part  = key_dict.get("PartName","")
+                    model = key_dict.get("ModelName","")
+                    sno   = str(key_dict.get("SampleNo",""))
+                    ref   = str(key_dict.get(ref_col,""))
+                    param = str(key_dict.get(param_col,""))
+                    kp    = bool(grp["KP"].astype(str).isin(["1","1.0","True"]).any()) if "KP" in grp.columns else False
+
+                    grp_s = grp.sort_values(["Date","Shift","Cycle"]).dropna(subset=["Actual"])
+                    if len(grp_s) < 10:
+                        continue
+
+                    y_all  = grp_s["Actual"].tolist()
+                    y_use  = y_all[-int(n_hist):]
+                    n_use  = len(y_use)
+                    if n_use < 5:
+                        continue
+
+                    nom   = float(grp_s["Nominal"].dropna().iloc[0])  if grp_s["Nominal"].notna().any()  else 0.0
+                    utol  = float(grp_s["Uppertol"].dropna().iloc[0]) if grp_s["Uppertol"].notna().any() else 0.0
+                    ltol  = float(grp_s["Lowertol"].dropna().iloc[0]) if grp_s["Lowertol"].notna().any() else 0.0
+                    usl   = round(nom + utol, 5)
+                    lsl   = round(nom + ltol, 5)
+
+                    # Linear regression
+                    x_arr   = np.arange(n_use)
+                    slope, intercept = np.polyfit(x_arr, y_use, 1)
+                    residuals = np.array(y_use) - (slope * x_arr + intercept)
+                    std_res   = float(np.std(residuals, ddof=1)) if n_use > 2 else 0.0
+
+                    # Forecast
+                    x_fc_arr = np.arange(n_use, n_use + int(n_fc))
+                    y_fc     = (slope * x_fc_arr + intercept).tolist()
+
+                    # Deteksi rule pada historis + forecast
+                    y_combined   = y_use + y_fc
+                    vbr_combined = _detect_kendali(y_combined)
+
+                    # Pisah: historis vs forecast
+                    has_hist_violation = any(
+                        any(i < n_use for i in idxs)
+                        for idxs in vbr_combined.values() if idxs
+                    )
+                    fc_rules_violated = [
+                        r for r, idxs in vbr_combined.items()
+                        if any(i >= n_use for i in idxs)
+                    ]
+                    n_fc_ng   = sum(1 for v in y_fc if v > usl or v < lsl)
+                    trend_lbl = "📈 Naik" if slope > 1e-6 else ("📉 Turun" if slope < -1e-6 else "➡ Stabil")
+
+                    # Estimasi shift sampai batas
+                    shifts_to_batas = None
+                    if slope > 1e-9:
+                        s = (usl - y_use[-1]) / slope
+                        if 0 < s <= 50: shifts_to_batas = int(s)
+                    elif slope < -1e-9:
+                        s = (lsl - y_use[-1]) / slope
+                        if 0 < s <= 50: shifts_to_batas = int(s)
+
+                    status = "🔴 Rule Terpicu" if fc_rules_violated else                              ("🟡 NG Prediksi" if n_fc_ng > 0 else                              ("⚠ Tren Menuju Batas" if shifts_to_batas else "🟢 Aman"))
+
+                    all_rows.append({
+                        "Part":        part,
+                        "Model":       model,
+                        "Sample":      sno,
+                        "Ref":         ref,
+                        "Parameter":   param,
+                        "KP":          kp,
+                        "n Data":      n_use,
+                        "Slope (mm/sh)": round(slope, 6),
+                        "Tren":        trend_lbl,
+                        "NG Prediksi": n_fc_ng,
+                        "Rule Terpicu":len(fc_rules_violated),
+                        "Rule List":   ", ".join([f"R{r}" for r in sorted(fc_rules_violated)]) or "-",
+                        "Est. Shift ke Batas": shifts_to_batas if shifts_to_batas else "-",
+                        "Status":      status,
+                        # simpan untuk chart detail
+                        "_y_use":      y_use,
+                        "_y_fc":       y_fc,
+                        "_usl":        usl,
+                        "_lsl":        lsl,
+                        "_nom":        nom,
+                        "_vbr":        vbr_combined,
+                        "_n_use":      n_use,
+                    })
+
+            st.session_state[cache_key] = all_rows
+            st.session_state[ts_key]    = _time.time()
+
+        all_rows = st.session_state[cache_key]
+
+        if not all_rows:
+            st.info("Tidak ada data cukup untuk prediksi. Pastikan filter sesuai dan data minimal 10 poin per titik.")
+            return
+
+        # ── KPI Summary ───────────────────────────────────────────
+        n_total    = len(all_rows)
+        n_rule     = sum(1 for r in all_rows if r["Rule Terpicu"] > 0)
+        n_ng_pred  = sum(1 for r in all_rows if r["NG Prediksi"] > 0)
+        n_batas    = sum(1 for r in all_rows if r["Est. Shift ke Batas"] != "-")
+        n_aman     = sum(1 for r in all_rows if r["Status"] == "🟢 Aman")
+
+        st.markdown(
+            f'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0 16px;">'            + "".join([
+                f'<div style="background:{bg};border-radius:8px;padding:12px;text-align:center;">'                f'<div style="font-size:22px;font-weight:700;color:{fc};">{val}</div>'                f'<div style="font-size:10px;color:#64748B;margin-top:2px;">{lbl}</div></div>'
+                for bg, fc, val, lbl in [
+                    ("#F8FAFC","#0F172A",   n_total,  "Total Titik"),
+                    ("#FEF2F2","#DC2626",   n_rule,   "Rule Terpicu (forecast)"),
+                    ("#FEF2F2","#DC2626",   n_ng_pred,"Prediksi NG"),
+                    ("#FFFBEB","#D97706",   n_batas,  "Menuju Batas Toleransi"),
+                    ("#F0FDF4","#16A34A",   n_aman,   "Aman"),
+                ]
+            ])
+            + '</div>',
+            unsafe_allow_html=True
+        )
+
+        # ── Filter hasil ──────────────────────────────────────────
+        STATUS_OPTS = ["Semua Status", "🔴 Rule Terpicu", "🟡 NG Prediksi",
+                       "⚠ Tren Menuju Batas", "🟢 Aman"]
+        if st.session_state.get("pr_status_filter") not in STATUS_OPTS:
+            st.session_state["pr_status_filter"] = "🔴 Rule Terpicu"
+
+        st.markdown('<div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">🔎 Filter Hasil</div>',
+                    unsafe_allow_html=True)
+        f_pr_status = st.pills(
+            "Status hasil", STATUS_OPTS,
+            default="🔴 Rule Terpicu", key="pr_status_filter",
+            selection_mode="single", label_visibility="collapsed",
+        ) or "🔴 Rule Terpicu"
+
+        rows_show = [r for r in all_rows
+                     if f_pr_status == "Semua Status" or r["Status"] == f_pr_status]
+
+        if not rows_show:
+            st.info(f"Tidak ada titik dengan status '{f_pr_status}'.")
+            return
+
+        # ── Tabel hasil ───────────────────────────────────────────
+        DISPLAY_COLS = ["Part","Model","Sample","Ref","Parameter","KP",
+                        "Tren","Slope (mm/sh)","NG Prediksi","Rule Terpicu",
+                        "Rule List","Est. Shift ke Batas","Status"]
+        df_res = pd.DataFrame([{c: r[c] for c in DISPLAY_COLS} for r in rows_show])
+        df_res = df_res.sort_values(["Rule Terpicu","NG Prediksi"], ascending=False).reset_index(drop=True)
+
+        STATUS_CLR_MAP = {
+            "🔴 Rule Terpicu":      "background:#FEE2E2;color:#991B1B;font-weight:700;",
+            "🟡 NG Prediksi":       "background:#FEF3C7;color:#92400E;font-weight:700;",
+            "⚠ Tren Menuju Batas":  "background:#FFF7ED;color:#C2410C;font-weight:700;",
+            "🟢 Aman":              "background:#DCFCE7;color:#166534;font-weight:700;",
+        }
+
+        def _style_row(row):
+            styles = [""] * len(row)
+            idx = list(row.index)
+            if "Status" in idx:
+                styles[idx.index("Status")] = STATUS_CLR_MAP.get(row["Status"],"")
+            if "KP" in idx and row["KP"]:
+                styles[idx.index("KP")] = "background:#FEF9C3;color:#713F12;font-weight:700;"
+            if "NG Prediksi" in idx and row["NG Prediksi"] > 0:
+                styles[idx.index("NG Prediksi")] = "color:#DC2626;font-weight:700;"
+            if "Rule Terpicu" in idx and row["Rule Terpicu"] > 0:
+                styles[idx.index("Rule Terpicu")] = "color:#DC2626;font-weight:700;"
+            return styles
+
+        st.markdown(
+            f'<div style="font-size:12px;color:#64748B;margin-bottom:6px;">'            f'👆 Klik baris untuk lihat grafik tren + prediksi · {len(rows_show)} titik ditampilkan</div>',
+            unsafe_allow_html=True
+        )
+
+        if st.session_state.pop("pr_clear_sel", False):
+            st.session_state.pop("pr_result_tbl", None)
+
+        sel = st.dataframe(
+            df_res.style.apply(_style_row, axis=1),
+            use_container_width=True,
+            hide_index=True,
+            height=min(520, 42 + len(df_res)*36),
+            on_select="rerun",
+            selection_mode="single-row",
+            key="pr_result_tbl",
+            column_config={
+                "KP": st.column_config.CheckboxColumn("KP", width="small"),
+                "Slope (mm/sh)": st.column_config.NumberColumn("Slope", format="%.6f"),
+            }
+        )
+
+        # ── Chart detail untuk baris yang diklik ─────────────────
+        sel_rows = sel.selection.rows if sel and hasattr(sel, "selection") else []
+        if not sel_rows:
+            return
+
+        row_idx = sel_rows[0]
+        if row_idx >= len(rows_show):
+            return
+        row = rows_show[df_res.index[row_idx]]   # pakai index asli setelah sort
+
+        y_use      = row["_y_use"]
+        y_fc       = row["_y_fc"]
+        usl        = row["_usl"]
+        lsl        = row["_lsl"]
+        nom        = row["_nom"]
+        vbr_c      = row["_vbr"]
+        n_use      = row["_n_use"]
+
+        st.markdown(
+            f'<div style="font-size:13px;font-weight:700;color:#0F172A;margin:16px 0 6px;">'            f'Grafik Tren + Prediksi — {row["Ref"]} · {row["Parameter"]} · Sample {row["Sample"]}</div>',
+            unsafe_allow_html=True
+        )
+
+        RC_CLR = {1:"#EF4444",2:"#F59E0B",3:"#8B5CF6",
+                  4:"#06B6D4",5:"#10B981",6:"#F97316",7:"#3B82F6"}
+
+        # Warnai titik historis
+        hist_pts = []
+        for i, v in enumerate(y_use):
+            style = {"color":"#6366F1"}
+            for r_num in [1,2,3,4,5,6,7]:
+                if i in vbr_c[r_num]:
+                    style = {"color":"#6366F1","borderColor":RC_CLR[r_num],"borderWidth":2.5}
+                    break
+            hist_pts.append({"value": round(v,5), "itemStyle": style})
+
+        # Warnai titik forecast
+        fc_pts = []
+        for i, v in enumerate(y_fc):
+            is_ng  = v > usl or v < lsl
+            base_c = "#EF4444" if is_ng else "#F59E0B"
+            style  = {"color": base_c}
+            for r_num in [1,2,3,4,5,6,7]:
+                if (i + n_use) in vbr_c[r_num]:
+                    style = {"color": base_c, "borderColor": RC_CLR[r_num], "borderWidth": 2.5}
+                    break
+            fc_pts.append({"value": round(float(v),5), "itemStyle": style})
+
+        # Tren line
+        x_arr   = np.arange(n_use)
+        slope_v, intercept_v = np.polyfit(x_arr, y_use, 1)
+        trend_h = [round(float(slope_v*i+intercept_v),5) for i in range(n_use)]
+        trend_f = [round(float(v),5) for v in y_fc]
+
+        all_v   = y_use + y_fc + [usl, lsl]
+        y_pad   = (max(all_v)-min(all_v))*0.15 or 0.01
+        y_min   = round(min(all_v)-y_pad, 5)
+        y_max   = round(max(all_v)+y_pad, 5)
+
+        x_hist_lbl = [f"H{i+1}" for i in range(n_use)]
+        x_fc_lbl   = [f"F+{i+1}" for i in range(len(y_fc))]
+        x_all      = x_hist_lbl + x_fc_lbl
+
+        mark_lines = [
+            {"yAxis": usl, "lineStyle": {"color":"#EF4444","width":2,"type":"solid"},
+             "label": {"formatter":f"USL {usl}","fontSize":10,"color":"#EF4444"}},
+            {"yAxis": lsl, "lineStyle": {"color":"#EF4444","width":2,"type":"solid"},
+             "label": {"formatter":f"LSL {lsl}","fontSize":10,"color":"#EF4444"}},
+            {"yAxis": nom, "lineStyle": {"color":"#22C55E","width":1.5,"type":"dashed"},
+             "label": {"formatter":f"Nom {nom}","fontSize":10,"color":"#22C55E"}},
+        ]
+
+        st_echarts({
+            "grid": {"top":48,"right":90,"bottom":50,"left":65},
+            "tooltip": {"trigger":"axis"},
+            "legend": {"data":["Aktual","Tren","Forecast"],"bottom":0,"icon":"circle","itemWidth":8},
+            "xAxis": {"type":"category","data":x_all,
+                      "axisLabel":{"rotate":25,"fontSize":8,"interval":"auto"}},
+            "yAxis": {"type":"value","min":y_min,"max":y_max,
+                      "axisLabel":{"fontSize":9},
+                      "splitLine":{"lineStyle":{"color":"#F1F5F9","type":"dashed"}}},
+            "dataZoom": [{"type":"inside"},{"type":"slider","bottom":8,"height":16}],
+            "series": [
+                {"name":"Aktual","type":"line",
+                 "data": hist_pts + [None]*len(y_fc),
+                 "symbol":"circle","symbolSize":7,
+                 "lineStyle":{"color":"#6366F1","width":1.5},
+                 "markLine":{"symbol":["none","none"],"silent":True,"data":mark_lines}},
+                {"name":"Tren","type":"line",
+                 "data": trend_h + trend_f,
+                 "symbol":"none",
+                 "lineStyle":{"color":"#94A3B8","width":1.5,"type":"dotted"}},
+                {"name":"Forecast","type":"line",
+                 "data": [None]*n_use + fc_pts,
+                 "symbol":"circle","symbolSize":8,
+                 "lineStyle":{"color":"#F59E0B","width":2,"type":"dashed"}},
+            ],
+        }, height="360px", key=f"pr_chart_{row['Ref']}_{row['Parameter']}_{row['Sample']}")
+
+        # Legend rule
+        st.markdown("""
+        <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:10px;color:#64748B;margin-top:4px;">
+          <span>Warna border titik = rule:</span>
+          <span style="color:#EF4444;">● R1</span><span style="color:#F59E0B;">● R2</span>
+          <span style="color:#8B5CF6;">● R3</span><span style="color:#06B6D4;">● R4</span>
+          <span style="color:#10B981;">● R5</span><span style="color:#F97316;">● R6</span>
+          <span style="color:#3B82F6;">● R7</span>
+          <span style="color:#EF4444;">■ Titik merah = NG forecast</span>
+        </div>
+        """, unsafe_allow_html=True)
+
 
     def _run_batch_arima(self, cache_path):
         import warnings
@@ -833,7 +1317,39 @@ class PredictivePage:
         with spc_r1c2:
             f_cat = st.selectbox("🏷 Kategori", cat_spc_opts, key="pred_cat")
 
-        # ── Filter Baris 2: Rule (tetap pills) ──
+        # Baris 2: KP | Ref/Point | Parameter (cascade dari combo+cat)
+        cur_spc_cat  = st.session_state.get("pred_cat", "Semua Kategori")
+        df_spc_cat   = df_spc_combo[df_spc_combo["Category"]==cur_spc_cat] if cur_spc_cat != "Semua Kategori" and "Category" in df_spc_combo.columns else df_spc_combo
+
+        _ref_col_spc   = "ref"   if "ref"   in df_spc_cat.columns else "PartName"
+        _param_col_spc = "point" if "point" in df_spc_cat.columns else "Parameter"
+
+        ref_spc_vals = sorted([r for r in df_spc_cat[_ref_col_spc].dropna().astype(str).unique() if r not in ("","-","nan")])
+        ref_spc_opts = ["Semua Ref / Point"] + ref_spc_vals
+        if st.session_state.get("pred_ref") not in ref_spc_opts:
+            st.session_state["pred_ref"] = "Semua Ref / Point"
+
+        cur_spc_ref  = st.session_state.get("pred_ref", "Semua Ref / Point")
+        df_spc_ref   = df_spc_cat[df_spc_cat[_ref_col_spc].astype(str)==cur_spc_ref] if cur_spc_ref != "Semua Ref / Point" else df_spc_cat
+
+        param_spc_vals = sorted([p for p in df_spc_ref[_param_col_spc].dropna().astype(str).unique() if p not in ("","-","nan")])
+        param_spc_opts = ["Semua Parameter"] + param_spc_vals
+        if st.session_state.get("pred_param") not in param_spc_opts:
+            st.session_state["pred_param"] = "Semua Parameter"
+
+        kp_spc_opts = ["Semua Titik", "KP Only"]
+        if st.session_state.get("pred_kp") not in kp_spc_opts:
+            st.session_state["pred_kp"] = "Semua Titik"
+
+        spc_r2c1, spc_r2c2, spc_r2c3 = st.columns([1.2, 1.5, 2.5], gap="small")
+        with spc_r2c1:
+            f_kp_spc = st.selectbox("⚠ Kritikal Point", kp_spc_opts, key="pred_kp")
+        with spc_r2c2:
+            f_ref_spc = st.selectbox("📍 Ref / Point", ref_spc_opts, key="pred_ref")
+        with spc_r2c3:
+            f_param_spc = st.selectbox("📐 Parameter", param_spc_opts, key="pred_param")
+
+        # ── Filter Baris 3: Rule (tetap pills) ──
         st.markdown('<div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">📏 Filter Rule SPC</div>', unsafe_allow_html=True)
         rule_opts = ["Semua Rule"] + [f"Rule {i}" for i in range(1,8)]
         f_rule = st.pills(
@@ -863,6 +1379,12 @@ class PredictivePage:
                 df_src = df_src[df_src["ModelName"] == f_model]
             if f_cat != "Semua Kategori" and "Category" in df_src.columns:
                 df_src = df_src[df_src["Category"] == f_cat]
+            if f_kp_spc == "KP Only" and "KP" in df_src.columns:
+                df_src = df_src[df_src["KP"].astype(str).isin(["1","1.0","True"])]
+            if f_ref_spc != "Semua Ref / Point" and _ref_col_spc in df_src.columns:
+                df_src = df_src[df_src[_ref_col_spc].astype(str) == f_ref_spc]
+            if f_param_spc != "Semua Parameter" and _param_col_spc in df_src.columns:
+                df_src = df_src[df_src[_param_col_spc].astype(str) == f_param_spc]
             with st.spinner("Mendeteksi kondisi proses di luar kendali..."):
                 st.session_state[nelson_key] = _build_kendali_history(df_src)
                 st.session_state[ts_key]     = _time.time()
@@ -999,12 +1521,8 @@ class PredictivePage:
                         f'<div style="font-size:12px;color:#1E293B;line-height:1.5;font-weight:500;">{desc}</div>'
                         f'<div style="margin-top:8px;border-radius:6px;overflow:hidden;'
                         f'border:1px dashed {clr}66;background:#F8FAFC;'
-                        f'height:80px;display:flex;align-items:center;justify-content:center;">'
-                        f'<img src="assets/ilustrasi/spc_rule_{r_num}.jpg" '
-                        f'onerror="this.style.display=\'none\';this.parentElement.innerHTML='
-                        f'\'<span style=\\"font-size:10px;color:#CBD5E1;\\">'
-                        f'📷 Rule {r_num} — ilustrasi belum tersedia</span>\';" '
-                        f'style="max-width:100%;max-height:78px;object-fit:contain;" alt="Rule {r_num}"/>'
+                        f'height:80px;display:flex;align-items:center;justify-content:center;">' +
+                        _get_rule_img_html(r_num, clr) +
                         f'</div>'
                         f'</div>',
                         unsafe_allow_html=True
