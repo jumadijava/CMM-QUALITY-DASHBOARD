@@ -7,6 +7,7 @@ from streamlit_echarts import JsCode
 
 # Import utilitas filter bersama
 from utils.filters import build_filters_dashboard, apply_filters, TIMEZONE, TARGET_OK
+from utils.xgb_inference import get_prediction_alerts, get_xgb_cache_key, run_xgb_inference
 from local_db import get_root_causes
 
 # ── Rekomendasi per kategori RC ──────────────────────────────────
@@ -101,119 +102,13 @@ class DashboardPage:
 
     # ── SVG icons ──────────────────────────────────────────────────
     def _get_prediction_alerts(self, filter_part=None, filter_model=None, filter_cmm=None) -> list:
-        """Load semua model XGBoost, predict shift berikutnya, return list alert per SampleNo."""
-        try:
-            import joblib, json
-            from pathlib import Path as _Path
-            from datetime import date as _date, datetime as _dt
-
-            MODEL_DIR = _Path("models")
-            if not MODEL_DIR.exists():
-                return []
-
-            try:
-                import pytz
-                now = _dt.now(pytz.timezone("Asia/Jakarta"))
-            except Exception:
-                now = _dt.now()
-            hour = now.hour
-            if 7 <= hour < 16:
-                next_shift, next_date = 2, _date.today()
-            elif 16 <= hour < 24:
-                next_shift, next_date = 3, _date.today()
-            else:
-                next_shift, next_date = 1, _date.today()
-
-            # ── Session state cache dengan TTL 5 menit ───────────
-            import time as _time
-            cache_key = f"dash_alerts_{next_shift}_{next_date.isoformat()}_{filter_part}_{filter_model}_{filter_cmm}"
-            ts_key    = f"{cache_key}_ts"
-            TTL       = 300  # 5 menit
-
-            if cache_key in st.session_state and \
-               _time.time() - st.session_state.get(ts_key, 0) < TTL:
-                return st.session_state[cache_key]
-
-            df = self.df_all
-            alerts = []
-            cached_models = _load_xgb_models()
-            if not cached_models:
-                return []
-
-            for stem, mdata in cached_models.items():
-                xgb_model = mdata["model"]
-                encoders  = mdata["encoders"]
-                minfo     = mdata["info"]
-
-                threshold = minfo.get("optimal_threshold", 0.5)
-                features  = minfo.get("features", [])
-                f_part    = minfo.get("part", "")
-                f_model   = minfo.get("model_name", "")
-
-                if filter_part and f_part != filter_part:
-                    continue
-                if filter_model and f_model != filter_model:
-                    continue
-
-                df_ref = df[
-                    (df["PartName"]==f_part) & (df["ModelName"]==f_model) &
-                    (df["Category"]=="Produksi")
-                ]
-                if filter_cmm:
-                    df_ref = df_ref[df_ref["CMMName"] == filter_cmm]
-                df_ref = df_ref[["PartName","ModelName","SampleNo","CMMName","Parameter",
-                   "Category","ref","point","Nominal","Uppertol","Lowertol","KP"]
-                  ].drop_duplicates().copy()
-                if df_ref.empty:
-                    continue
-
-                df_ref["Shift"]       = next_shift
-                df_ref["Cycle"]       = 1
-                df_ref["DayOfWeek"]   = next_date.weekday()
-                df_ref["Hour"]        = 7 if next_shift==1 else (16 if next_shift==2 else 0)
-                df_ref["DayOfMonth"]  = next_date.day
-                df_ref["WeekOfYear"]  = int(next_date.isocalendar()[1])
-                df_ref["TolRange"]    = df_ref["Uppertol"] - df_ref["Lowertol"]
-                df_ref["TolMidpoint"] = (df_ref["Uppertol"] + df_ref["Lowertol"]) / 2
-
-                for col in ["PartName","ModelName","SampleNo","CMMName",
-                            "Parameter","Category","ref","point"]:
-                    le = encoders.get(col)
-                    if le:
-                        known = set(le.classes_)
-                        df_ref[col+"_enc"] = df_ref[col].astype(str).apply(
-                            lambda x: le.transform([x])[0] if x in known else -1
-                        )
-                    else:
-                        df_ref[col+"_enc"] = 0
-
-                proba = xgb_model.predict_proba(df_ref[features].fillna(0))[:,1]
-                df_ref["prob"] = proba
-                df_ref["pred"] = proba >= threshold
-                ng_rows = df_ref[df_ref["pred"]==True].sort_values("prob", ascending=False)
-
-                if not ng_rows.empty:
-                    high_ng = df_ref[(df_ref["pred"]==True) & (df_ref["prob"] >= 0.7)]
-                    for sno, grp in high_ng.groupby("SampleNo"):
-                        grp_s = grp.sort_values("prob", ascending=False)
-                        alerts.append({
-                            "part":      f_part,
-                            "model":     f_model,
-                            "shift":     next_shift,
-                            "n_ng":      len(grp_s),
-                            "top_ref":   f'{grp_s.iloc[0]["ref"]} · {grp_s.iloc[0]["point"]}',
-                            "top_ref_raw": str(grp_s.iloc[0]["ref"]),
-                            "top_param": str(grp_s.iloc[0]["point"]),
-                            "top_prob":  grp_s.iloc[0]["prob"] * 100,
-                            "label":     f"{f_part} {f_model} {sno} Shift {next_shift}",
-                        })
-
-            result = sorted(alerts, key=lambda x: -x["top_prob"])
-            st.session_state[cache_key] = result
-            st.session_state[ts_key]    = _time.time()
-            return result
-        except Exception:
-            return []
+        """Delegasi ke shared xgb_inference — cache di-share dengan Predictive."""
+        return get_prediction_alerts(
+            self.df_all,
+            filter_part=filter_part,
+            filter_model=filter_model,
+            filter_cmm=filter_cmm,
+        )
 
     def _get_ng_alerts(self, df: pd.DataFrame, limit: int = 20) -> list:
         """Ambil NG terbaru dari df terfilter, sort by Date desc."""
@@ -340,7 +235,7 @@ class DashboardPage:
                 # Clear semua cache
                 st.cache_data.clear()
                 for k in list(st.session_state.keys()):
-                    if any(k.startswith(p) for p in ("dash_alerts_","cls_result_","nelson_")):
+                    if any(k.startswith(p) for p in ("xgb_cls_","nelson_")):
                         del st.session_state[k]
                 st.session_state["dash_last_updated"] = time.time()
                 st.rerun()
@@ -509,6 +404,69 @@ class DashboardPage:
                 f'</div>',
                 unsafe_allow_html=True
             )
+
+        # ── Alert Prediksi Rule SPC ───────────────────────────────
+        from utils.xgb_inference import get_rule_alerts
+        _rule_alerts = get_rule_alerts(
+            self.df_all,
+            filter_part  = f_part  if f_part  not in ("All Part","All","Semua Part",None,"")  else None,
+            filter_model = f_model if f_model not in ("All Model","All","Semua Model",None,"") else None,
+        )
+
+        if _rule_alerts:
+            svg_rule = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>'
+            rule_slides = ""
+            for i, _r in enumerate(_rule_alerts):
+                kp_tag = " &nbsp;<span style='font-size:9px;background:#7C3AED;color:white;padding:1px 5px;border-radius:4px;'>KP</span>" if _r["kp"] else ""
+                rule_info = f" · ⚠ {_r['rule_list']}" if _r['rule_list'] else ""
+                ng_info   = f" · NG dlm {_r['n_ng_pred']} shift" if _r['n_ng_pred'] > 0 else ""
+                batas_info= f" · Batas ±{_r['est_batas']} shift" if _r['est_batas'] != '-' else ""
+                dur_r = len(_rule_alerts) * 12
+                rule_slides += f"""
+                <div class="rule-slide" style="animation-delay:{i*12}s;animation-duration:{dur_r}s;">
+                  <div style="background:#F5F3FF;border-radius:8px;border:1px solid #DDD6FE;
+                       padding:10px 14px;display:flex;align-items:center;gap:10px;">
+                    <div style="width:30px;height:30px;background:#EDE9FE;border-radius:50%;
+                         display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                      {svg_rule}
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                      <div style="font-size:12px;font-weight:700;color:#4C1D95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {_r['part']} {_r['model']} No.{_r['sno']}{kp_tag}
+                        <span style="font-size:10px;color:#94A3B8;font-weight:400;margin-left:6px;">{i+1}/{len(_rule_alerts)}</span>
+                      </div>
+                      <div style="font-size:11px;color:#6D28D9;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {_r['ref']} · {_r['param']}{rule_info}{ng_info}{batas_info}</div>
+                      <div style="font-size:10px;color:#7C3AED;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        📐 {_r['tren']} · {(_r.get('rule_descs','')[:70] + '...' if len(_r.get('rule_descs','')) > 70 else _r.get('rule_descs','')) or _r['status']}</div>
+                    </div>
+                    <span style="font-size:10px;font-weight:700;color:#6D28D9;background:white;
+                         padding:3px 10px;border-radius:99px;border:1px solid #DDD6FE;white-space:nowrap;flex-shrink:0;">
+                      {_r['status']}</span>
+                  </div>
+                </div>"""
+
+            total_r = len(_rule_alerts)
+            dur_r   = total_r * 12
+            trans_r = round(0.3 / dur_r * 100, 2)
+            stay_r  = round(100 / total_r - trans_r * 2, 2)
+            st.markdown(f"""
+            <style>
+            .rule-alert-bar {{ position:relative; height:72px; overflow:hidden; margin-bottom:6px; }}
+            .rule-slide {{
+                position:absolute; width:100%; top:0; left:0;
+                opacity:0; animation:ruleFade {dur_r}s infinite;
+            }}
+            @keyframes ruleFade {{
+                0%              {{ opacity:0; }}
+                {trans_r}%        {{ opacity:1; }}
+                {trans_r+stay_r}%   {{ opacity:1; }}
+                {trans_r*2+stay_r}% {{ opacity:0; }}
+                100%            {{ opacity:0; }}
+            }}
+            </style>
+            <div class="rule-alert-bar">{rule_slides}</div>
+            """, unsafe_allow_html=True)
 
         # ─────────────────────────────────────────────────────────────
         # ROW 1 — KPI CARDS (4 metrik utama)
