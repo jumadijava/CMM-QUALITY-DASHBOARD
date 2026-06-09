@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from streamlit_echarts import st_echarts
+from streamlit_echarts import st_echarts, JsCode
+from utils.xgb_inference import run_xgb_inference, get_xgb_cache_key
 
 # ─────────────────────────────────────────────────────────────────
 #  Definisi Aturan Deteksi Proses di Luar Kendali
@@ -496,25 +497,10 @@ class PredictivePage:
 
     @st.fragment
     def _render_klasifikasi(self):
-        import joblib, json
-        from pathlib import Path as _Path
         from datetime import date as _date, datetime as _dt
 
-        MODEL_DIR = _Path("models")
-
         # ── Deteksi shift berikutnya ──────────────────────────────
-        try:
-            import pytz
-            now = _dt.now(pytz.timezone("Asia/Jakarta"))
-        except Exception:
-            now = _dt.now()
-        hour = now.hour
-        if 7 <= hour < 16:
-            cur_shift, next_shift, next_date = 1, 2, _date.today()
-        elif 16 <= hour < 24:
-            cur_shift, next_shift, next_date = 2, 3, _date.today()
-        else:
-            cur_shift, next_shift, next_date = 3, 1, _date.today()
+        cache_key, cur_shift, next_shift, next_date = get_xgb_cache_key()
 
         st.markdown(
             f'<div style="background:#EFF6FF;border-radius:8px;padding:12px 16px;'
@@ -527,88 +513,23 @@ class PredictivePage:
             unsafe_allow_html=True
         )
 
-        model_files = sorted(MODEL_DIR.glob("xgb_*.pkl")) if MODEL_DIR.exists() else []
-        if not model_files:
-            st.warning(f"Tidak ada model di folder `{MODEL_DIR}/`.")
+        # ── Jalankan inference (shared cache dengan Dashboard) ────
+        import time as _time
+        ts_key = f"{cache_key}_ts"
+        is_cached = (cache_key in st.session_state and
+                     _time.time() - st.session_state.get(ts_key, 0) < 1800)
+
+        if not is_cached:
+            with st.spinner("Memuat prediksi model..."):
+                result_df = run_xgb_inference(self.df_all)
+        else:
+            result_df = st.session_state.get(cache_key)
+
+        if result_df is None or result_df.empty:
+            st.info("Tidak ada hasil prediksi.")
             return
 
-        # ── Session state cache — hindari serialisasi JSON ────────
-        import time as _time
-        cache_key = f"cls_result_{next_shift}_{next_date.isoformat()}"
-        ts_key    = f"{cache_key}_ts"
-        TTL       = 300
-        if cache_key not in st.session_state or \
-           _time.time() - st.session_state.get(ts_key, 0) > TTL:
-            all_results = []
-            with st.spinner("Memuat prediksi model..."):
-                df = self.df_all
-                for mp in model_files:
-                    stem = mp.stem.replace("xgb_", "")
-                    ep   = MODEL_DIR / f"encoders_{stem}.pkl"
-                    ip   = MODEL_DIR / f"model_info_{stem}.json"
-                    if not ep.exists() or not ip.exists():
-                        continue
-                    try:
-                        xgb_model = joblib.load(mp)
-                        encoders  = joblib.load(ep)
-                        with open(ip) as fi:
-                            minfo = json.load(fi)
-                    except Exception:
-                        continue
-
-                    threshold = minfo.get("optimal_threshold", 0.5)
-                    features  = minfo.get("features", [])
-                    f_part    = minfo.get("part", "")
-                    f_model   = minfo.get("model_name", "")
-
-                    df_ref = df[
-                        (df["PartName"]==f_part) & (df["ModelName"]==f_model)
-                    ][["PartName","ModelName","SampleNo","CMMName","Parameter",
-                       "Category","ref","point","Nominal","Uppertol","Lowertol","KP"]
-                      ].drop_duplicates().copy()
-                    if df_ref.empty:
-                        continue
-
-                    df_ref["Shift"]       = next_shift
-                    df_ref["Cycle"]       = 1
-                    df_ref["DayOfWeek"]   = next_date.weekday()
-                    df_ref["Hour"]        = 7 if next_shift==1 else (16 if next_shift==2 else 0)
-                    df_ref["DayOfMonth"]  = next_date.day
-                    df_ref["WeekOfYear"]  = int(next_date.isocalendar()[1])
-                    df_ref["TolRange"]    = df_ref["Uppertol"] - df_ref["Lowertol"]
-                    df_ref["TolMidpoint"] = (df_ref["Uppertol"] + df_ref["Lowertol"]) / 2
-
-                    for col in ["PartName","ModelName","SampleNo","CMMName",
-                                "Parameter","Category","ref","point"]:
-                        le = encoders.get(col)
-                        if le:
-                            known = set(le.classes_)
-                            df_ref[col+"_enc"] = df_ref[col].astype(str).apply(
-                                lambda x: le.transform([x])[0] if x in known else -1
-                            )
-                        else:
-                            df_ref[col+"_enc"] = 0
-
-                    try:
-                        proba = xgb_model.predict_proba(df_ref[features].fillna(0))[:,1]
-                    except Exception:
-                        continue
-
-                    df_ref["Prob_NG"] = (proba * 100).round(1)
-                    df_ref["Pred"]    = ["NG" if p >= threshold else "OK" for p in proba]
-                    df_ref["Risiko"]  = df_ref["Prob_NG"].apply(
-                        lambda p: "🔴 Tinggi" if p >= threshold*100 else
-                                  ("🟡 Sedang" if p >= 30 else "🟢 Rendah")
-                    )
-                    all_results.append(df_ref)
-
-            if not all_results:
-                st.info("Tidak ada hasil prediksi.")
-                return
-            st.session_state[cache_key] = pd.concat(all_results, ignore_index=True)
-            st.session_state[ts_key]    = _time.time()
-
-        result = st.session_state[cache_key]
+        result = result_df
 
         # ── Filter Baris 1: Risiko (pills) tetap di atas ──
         st.markdown('<div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">🎯 Tingkat Risiko</div>', unsafe_allow_html=True)
@@ -859,17 +780,13 @@ class PredictivePage:
         if st.session_state.get("pr_kp") not in kp_pr_opts:
             st.session_state["pr_kp"] = "Semua Titik"
 
-        pr_r1c1, pr_r1c2, pr_r1c3, pr_r1c4 = st.columns([2.5, 1.4, 1.1, 1.1], gap="small")
+        pr_r1c1, pr_r1c2, pr_r1c3 = st.columns([2.5, 1.4, 1.1], gap="small")
         with pr_r1c1:
             f_pr_combo = st.selectbox("🔩 Part · Model", combo_pr_opts, key="pr_combo")
         with pr_r1c2:
             f_pr_cat = st.selectbox("🏷 Kategori", cat_pr_opts, key="pr_cat")
         with pr_r1c3:
             f_pr_kp = st.selectbox("⚠ KP", kp_pr_opts, key="pr_kp")
-        with pr_r1c4:
-            n_hist = st.number_input("📊 Hist. (shift)", min_value=10, max_value=100,
-                                     value=20, step=5, key="pr_n_hist",
-                                     help="Jumlah data terakhir untuk hitung tren")
 
         # ── Filter Baris 2: SampleNo ──────────────────────────────
         df_pr_filt = df_pr_base.copy()
@@ -917,8 +834,13 @@ class PredictivePage:
         with pr_r2c3:
             f_pr_param = st.selectbox("📐 Parameter",   param_pr_opts, key="pr_param")
 
-        pr_r3c1, _ = st.columns([1.5, 3.5], gap="small")
+        # ── Baris 3: n_hist + n_fc di bawah semua filter ─────────
+        pr_r3c1, pr_r3c2, _ = st.columns([1.5, 1.5, 2.0], gap="small")
         with pr_r3c1:
+            n_hist = st.number_input("📊 Hist. (shift)", min_value=10, max_value=100,
+                                     value=20, step=5, key="pr_n_hist",
+                                     help="Jumlah data terakhir untuk hitung tren")
+        with pr_r3c2:
             n_fc = st.number_input("🔭 Prediksi ke depan (shift)", min_value=1,
                                    max_value=50, value=10, step=1, key="pr_n_fc")
 
@@ -932,106 +854,123 @@ class PredictivePage:
         f_pr_param_k = st.session_state.get("pr_param", "Semua Parameter")
         cache_key = f"pr_result_{f_pr_combo}_{f_pr_cat}_{f_pr_kp}_{f_pr_sno}_{f_pr_ref_k}_{f_pr_param_k}_{int(n_hist)}_{int(n_fc)}"
         ts_key    = f"{cache_key}_ts"
-        TTL       = 300
+        TTL       = 1800  # 30 menit
 
-        if cache_key not in st.session_state or            _time.time() - st.session_state.get(ts_key, 0) > TTL:
+        # ── Coba pakai shared cache kalau filter = default ────────
+        from utils.xgb_inference import RULE_CACHE_KEY, run_rule_prediction
+        _is_default = (
+            f_pr_combo  == "— Semua Part & Model —" and
+            f_pr_cat    in ("Produksi", "Semua Kategori") and
+            f_pr_kp     == "Semua Titik" and
+            f_pr_sno    == "Semua Sample" and
+            f_pr_ref_k  == "Semua Ref / Point" and
+            f_pr_param_k == "Semua Parameter" and
+            int(n_hist) == 20 and int(n_fc) == 10
+        )
 
-            all_rows = []
-            group_keys = [col for col in ["PartName","ModelName","SampleNo", ref_col, param_col]
-                          if col in df_pr_filt.columns]
+        if _is_default:
+            # Pakai shared cache — warmup sudah jalan saat login
+            _rts_k = f"{RULE_CACHE_KEY}_ts"
+            if RULE_CACHE_KEY not in st.session_state or \
+               _time.time() - st.session_state.get(_rts_k, 0) > TTL:
+                with st.spinner("🔍 Menghitung tren & prediksi rule..."):
+                    run_rule_prediction(df_pr_filt)
+            all_rows = st.session_state.get(RULE_CACHE_KEY) or []
+        else:
+            # Filter spesifik — scan subset data
+            if cache_key not in st.session_state or \
+               _time.time() - st.session_state.get(ts_key, 0) > TTL:
 
-            with st.spinner("🔍 Menghitung tren & prediksi rule semua titik..."):
-                for keys, grp in df_pr_filt.groupby(group_keys, sort=False):
-                    key_dict = dict(zip(group_keys, keys if isinstance(keys, tuple) else [keys]))
-                    part  = key_dict.get("PartName","")
-                    model = key_dict.get("ModelName","")
-                    sno   = str(key_dict.get("SampleNo",""))
-                    ref   = str(key_dict.get(ref_col,""))
-                    param = str(key_dict.get(param_col,""))
-                    kp    = bool(grp["KP"].astype(str).isin(["1","1.0","True"]).any()) if "KP" in grp.columns else False
+                all_rows = []
+                group_keys = [col for col in ["PartName","ModelName","SampleNo", ref_col, param_col]
+                              if col in df_pr_filt.columns]
 
-                    grp_s = grp.sort_values(["Date","Shift","Cycle"]).dropna(subset=["Actual"])
-                    if len(grp_s) < 10:
-                        continue
+                with st.spinner("🔍 Menghitung tren & prediksi rule semua titik..."):
+                    for keys, grp in df_pr_filt.groupby(group_keys, sort=False):
+                        key_dict = dict(zip(group_keys, keys if isinstance(keys, tuple) else [keys]))
+                        part  = key_dict.get("PartName","")
+                        model = key_dict.get("ModelName","")
+                        sno   = str(key_dict.get("SampleNo",""))
+                        ref   = str(key_dict.get(ref_col,""))
+                        param = str(key_dict.get(param_col,""))
+                        kp    = bool(grp["KP"].astype(str).isin(["1","1.0","True"]).any()) if "KP" in grp.columns else False
 
-                    y_all  = grp_s["Actual"].tolist()
-                    y_use  = y_all[-int(n_hist):]
-                    n_use  = len(y_use)
-                    if n_use < 5:
-                        continue
+                        grp_s = grp.sort_values(["Date","Shift","Cycle"]).dropna(subset=["Actual"])
+                        if len(grp_s) < 10:
+                            continue
 
-                    nom   = float(grp_s["Nominal"].dropna().iloc[0])  if grp_s["Nominal"].notna().any()  else 0.0
-                    utol  = float(grp_s["Uppertol"].dropna().iloc[0]) if grp_s["Uppertol"].notna().any() else 0.0
-                    ltol  = float(grp_s["Lowertol"].dropna().iloc[0]) if grp_s["Lowertol"].notna().any() else 0.0
-                    usl   = round(nom + utol, 5)
-                    lsl   = round(nom + ltol, 5)
+                        y_all  = grp_s["Actual"].tolist()
+                        y_use  = y_all[-int(n_hist):]
+                        n_use  = len(y_use)
+                        if n_use < 5:
+                            continue
 
-                    # Linear regression
-                    x_arr   = np.arange(n_use)
-                    slope, intercept = np.polyfit(x_arr, y_use, 1)
-                    residuals = np.array(y_use) - (slope * x_arr + intercept)
-                    std_res   = float(np.std(residuals, ddof=1)) if n_use > 2 else 0.0
+                        nom   = float(grp_s["Nominal"].dropna().iloc[0])  if grp_s["Nominal"].notna().any()  else 0.0
+                        utol  = float(grp_s["Uppertol"].dropna().iloc[0]) if grp_s["Uppertol"].notna().any() else 0.0
+                        ltol  = float(grp_s["Lowertol"].dropna().iloc[0]) if grp_s["Lowertol"].notna().any() else 0.0
+                        usl   = round(nom + utol, 5)
+                        lsl   = round(nom + ltol, 5)
 
-                    # Forecast
-                    x_fc_arr = np.arange(n_use, n_use + int(n_fc))
-                    y_fc     = (slope * x_fc_arr + intercept).tolist()
+                        x_arr   = np.arange(n_use)
+                        slope, intercept = np.polyfit(x_arr, y_use, 1)
 
-                    # Deteksi rule pada historis + forecast
-                    y_combined   = y_use + y_fc
-                    vbr_combined = _detect_kendali(y_combined)
+                        x_fc_arr = np.arange(n_use, n_use + int(n_fc))
+                        y_fc     = (slope * x_fc_arr + intercept).tolist()
 
-                    # Pisah: historis vs forecast
-                    has_hist_violation = any(
-                        any(i < n_use for i in idxs)
-                        for idxs in vbr_combined.values() if idxs
-                    )
-                    fc_rules_violated = [
-                        r for r, idxs in vbr_combined.items()
-                        if any(i >= n_use for i in idxs)
-                    ]
-                    n_fc_ng   = sum(1 for v in y_fc if v > usl or v < lsl)
-                    trend_lbl = "📈 Naik" if slope > 1e-6 else ("📉 Turun" if slope < -1e-6 else "➡ Stabil")
+                        y_combined   = y_use + y_fc
+                        vbr_combined = _detect_kendali(y_combined)
 
-                    # Estimasi shift sampai batas
-                    shifts_to_batas = None
-                    if slope > 1e-9:
-                        s = (usl - y_use[-1]) / slope
-                        if 0 < s <= 50: shifts_to_batas = int(s)
-                    elif slope < -1e-9:
-                        s = (lsl - y_use[-1]) / slope
-                        if 0 < s <= 50: shifts_to_batas = int(s)
+                        has_hist_violation = any(
+                            any(i < n_use for i in idxs)
+                            for idxs in vbr_combined.values() if idxs
+                        )
+                        fc_rules_violated = [
+                            r for r, idxs in vbr_combined.items()
+                            if any(i >= n_use for i in idxs)
+                        ]
+                        n_fc_ng   = sum(1 for v in y_fc if v > usl or v < lsl)
+                        trend_lbl = "📈 Naik" if slope > 1e-6 else ("📉 Turun" if slope < -1e-6 else "➡ Stabil")
 
-                    status = "🔴 Rule Terpicu" if fc_rules_violated else                              ("🟡 NG Prediksi" if n_fc_ng > 0 else                              ("⚠ Tren Menuju Batas" if shifts_to_batas else "🟢 Aman"))
+                        shifts_to_batas = None
+                        if slope > 1e-9:
+                            s = (usl - y_use[-1]) / slope
+                            if 0 < s <= 50: shifts_to_batas = int(s)
+                        elif slope < -1e-9:
+                            s = (lsl - y_use[-1]) / slope
+                            if 0 < s <= 50: shifts_to_batas = int(s)
 
-                    all_rows.append({
-                        "Part":        part,
-                        "Model":       model,
-                        "Sample":      sno,
-                        "Ref":         ref,
-                        "Parameter":   param,
-                        "KP":          kp,
-                        "n Data":      n_use,
-                        "Slope (mm/sh)": round(slope, 6),
-                        "Tren":        trend_lbl,
-                        "NG Prediksi": n_fc_ng,
-                        "Rule Terpicu":len(fc_rules_violated),
-                        "Rule List":   ", ".join([f"R{r}" for r in sorted(fc_rules_violated)]) or "-",
-                        "Est. Shift ke Batas": shifts_to_batas if shifts_to_batas else "-",
-                        "Status":      status,
-                        # simpan untuk chart detail
-                        "_y_use":      y_use,
-                        "_y_fc":       y_fc,
-                        "_usl":        usl,
-                        "_lsl":        lsl,
-                        "_nom":        nom,
-                        "_vbr":        vbr_combined,
-                        "_n_use":      n_use,
-                    })
+                        status = "🔴 Rule Terpicu" if fc_rules_violated else \
+                                 ("🟡 NG Prediksi" if n_fc_ng > 0 else \
+                                 ("⚠ Tren Menuju Batas" if shifts_to_batas else "🟢 Aman"))
 
-            st.session_state[cache_key] = all_rows
-            st.session_state[ts_key]    = _time.time()
+                        all_rows.append({
+                            "Part":        part,
+                            "Model":       model,
+                            "Sample":      sno,
+                            "Ref":         ref,
+                            "Parameter":   param,
+                            "KP":          kp,
+                            "n Data":      n_use,
+                            "Slope (mm/sh)": round(slope, 6),
+                            "Tren":        trend_lbl,
+                            "NG Prediksi": n_fc_ng,
+                            "Rule Terpicu":len(fc_rules_violated),
+                            "Rule List":   ", ".join([f"R{r}" for r in sorted(fc_rules_violated)]) or "-",
+                            "Est. Shift ke Batas": shifts_to_batas if shifts_to_batas else "-",
+                            "Status":      status,
+                            "_y_use":      y_use,
+                            "_y_fc":       y_fc,
+                            "_usl":        usl,
+                            "_lsl":        lsl,
+                            "_nom":        nom,
+                            "_vbr":        vbr_combined,
+                            "_n_use":      n_use,
+                        })
 
-        all_rows = st.session_state[cache_key]
+                st.session_state[cache_key] = all_rows
+                st.session_state[ts_key]    = _time.time()
+
+            all_rows = st.session_state[cache_key]
 
         if not all_rows:
             st.info("Tidak ada data cukup untuk prediksi. Pastikan filter sesuai dan data minimal 10 poin per titik.")
@@ -1184,26 +1123,54 @@ class PredictivePage:
         x_all = x_hist_lbl + fc_labels
         n_all = len(x_all)
 
-        # Style titik — 1 fungsi untuk historis, 1 untuk forecast
+        # Build peta: index → list rule yang terpicu di titik itu
+        def _rules_at(idx: int) -> list:
+            return [r for r in range(1,8) if idx in vbr_c[r]]
+
+        # Style titik — border tebal + tooltip rule
         def _pt_h(i, v):
-            item = {"color":"#6366F1"}
-            for r in [1,2,3,4,5,6,7]:
-                if i in vbr_c[r]:
-                    item = {"color":"#6366F1","borderColor":RC[r],"borderWidth":2.5}
-                    break
-            return {"value":round(v,5),"itemStyle":item}
+            rules_here = _rules_at(i)
+            val_str    = round(v, 5)
+            if rules_here:
+                # Warna border = rule dengan prioritas tertinggi (rule terkecil = paling kritis)
+                border_clr = RC[rules_here[0]]
+                rule_txt   = ", ".join(f"Rule {r}" for r in rules_here)
+                item = {
+                    "color":       "#6366F1",
+                    "borderColor": border_clr,
+                    "borderWidth": 3,
+                }
+                return {
+                    "value":     val_str,
+                    "itemStyle": item,
+                    "tooltip":   {"formatter": f"{x_all[i]}<br/>Aktual: <b>{val_str}</b><br/>⚠ {rule_txt}"},
+                    "name":      rule_txt,
+                }
+            return {"value": val_str, "itemStyle": {"color": "#6366F1"}}
 
         def _pt_f(i, v):
-            base = "#EF4444" if (v>usl_d or v<lsl_d) else "#F59E0B"
-            item = {"color":base}
-            for r in [1,2,3,4,5,6,7]:
-                if (i+n_use) in vbr_c[r]:
-                    item = {"color":base,"borderColor":RC[r],"borderWidth":2.5}
-                    break
-            return {"value":round(float(v),5),"itemStyle":item}
+            abs_idx    = i + n_use
+            rules_here = _rules_at(abs_idx)
+            val_str    = round(float(v), 5)
+            base_clr   = "#EF4444" if (v > usl_d or v < lsl_d) else "#F59E0B"
+            if rules_here:
+                border_clr = RC[rules_here[0]]
+                rule_txt   = ", ".join(f"Rule {r}" for r in rules_here)
+                item = {
+                    "color":       base_clr,
+                    "borderColor": border_clr,
+                    "borderWidth": 3,
+                }
+                return {
+                    "value":     val_str,
+                    "itemStyle": item,
+                    "tooltip":   {"formatter": f"{x_all[abs_idx]}<br/>Forecast: <b>{val_str}</b><br/>⚠ {rule_txt}"},
+                    "name":      rule_txt,
+                }
+            return {"value": val_str, "itemStyle": {"color": base_clr}}
 
-        pts_hist = [_pt_h(i,v) for i,v in enumerate(y_use)]
-        pts_fc   = [_pt_f(i,v) for i,v in enumerate(y_fc)]
+        pts_hist = [_pt_h(i, v) for i, v in enumerate(y_use)]
+        pts_fc   = [_pt_f(i, v) for i, v in enumerate(y_fc)]
 
         # Tren sepanjang n_all
         x_arr  = np.arange(n_use)
@@ -1250,13 +1217,51 @@ class PredictivePage:
         </div>
         """, unsafe_allow_html=True)
 
+        # Bangun lookup rule per index untuk tooltip JS
+        # Format: { index: "Rule 1, Rule 3" }
+        rule_map_hist = {}
+        rule_map_fc   = {}
+        for r in range(1, 8):
+            for idx in vbr_c[r]:
+                if idx < n_use:
+                    rule_map_hist.setdefault(idx, []).append(f"Rule {r}")
+                else:
+                    rule_map_fc.setdefault(idx - n_use, []).append(f"Rule {r}")
+
+        # Inject rule label ke field "name" setiap titik agar bisa dibaca JS
+        for i, pt in enumerate(pts_hist):
+            if i in rule_map_hist:
+                pt["name"] = " · ".join(rule_map_hist[i])
+            else:
+                pt["name"] = ""
+        for i, pt in enumerate(pts_fc):
+            if i in rule_map_fc:
+                pt["name"] = " · ".join(rule_map_fc[i])
+            else:
+                pt["name"] = ""
+
+        tooltip_js = JsCode("""
+        function(params) {
+            var lines = [];
+            params.forEach(function(p) {
+                if (p.value === null || p.value === undefined) return;
+                var label = p.seriesName + ': <b>' + p.value + '</b>';
+                if (p.name && p.name !== '' && (p.seriesName === 'Aktual' || p.seriesName === 'Forecast')) {
+                    label += '<br/><span style="color:#EF4444;font-weight:700;">⚠ ' + p.name + '</span>';
+                }
+                lines.push(p.marker + ' ' + label);
+            });
+            return params[0].axisValueLabel + '<br/>' + lines.join('<br/>');
+        }
+        """)
+
         _chart_key = f"pr_chart_{abs(hash(str(row['Ref'])+str(row['Parameter'])+str(row['Sample'])))}"
         st_echarts({
             "title": {"text":f'Tren — {row["Ref"]} · {row["Parameter"]} · No.{row["Sample"]}',
                       "left":12,"top":8,
                       "textStyle":{"fontSize":13,"fontWeight":700,"color":"#0F172A"}},
             "grid":  {"top":50,"right":90,"bottom":58,"left":60},
-            "tooltip":{"trigger":"axis","formatter":"{b}<br/>Aktual: <b>{c}</b>"},
+            "tooltip":{"trigger":"axis","formatter": tooltip_js},
             "legend":{"data":["Aktual","Forecast","Tren"],"top":10,"right":16,
                       "icon":"circle","itemWidth":8,"textStyle":{"fontSize":10}},
             "xAxis": {
@@ -1281,7 +1286,7 @@ class PredictivePage:
             "series": [
                 {"name":"Aktual","type":"line",
                  "data": pts_hist + [None]*n_fc_i,
-                 "symbol":"circle","symbolSize":8,
+                 "symbol":"circle","symbolSize":10,
                  "lineStyle":{"color":"#6366F1","width":1.5},
                  "markLine":{"symbol":["none","none"],"silent":True,"data":mark_lines},
                  "markArea":{
@@ -1291,7 +1296,7 @@ class PredictivePage:
                  }},
                 {"name":"Forecast","type":"line",
                  "data": [None]*n_use + pts_fc,
-                 "symbol":"circle","symbolSize":8,
+                 "symbol":"circle","symbolSize":10,
                  "lineStyle":{"color":"#F59E0B","width":2,"type":"dashed"}},
                 {"name":"Tren","type":"line",
                  "data": trend_all,
