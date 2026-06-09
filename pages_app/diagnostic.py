@@ -217,7 +217,7 @@ class DiagnosticPage:
         col_r1 = st.columns([1.6, 1.2, 1.4, 1.2], gap="small")
 
         with col_r1[0]:
-            time_opts = ["Semua Periode", "Hari Ini", "7 Hari Terakhir", "30 Hari Terakhir"]
+            time_opts = ["Semua Periode", "Hari Ini", "7 Hari Terakhir", "30 Hari Terakhir", "Custom"]
             f_time = st.selectbox(
                 "📅 Periode", time_opts,
                 key="diag_time_sel",
@@ -254,6 +254,17 @@ class DiagnosticPage:
 
         # ── Terapkan filter Time & Shift & Category ke df_base ────────
         today = date.today()
+
+        # Custom date picker — muncul kalau pilih Custom
+        if f_time == "Custom":
+            _dc1, _dc2 = st.columns(2, gap="small")
+            with _dc1:
+                diag_d1 = st.date_input("Dari", value=today - timedelta(days=30),
+                                        key="diag_d1", label_visibility="visible")
+            with _dc2:
+                diag_d2 = st.date_input("Sampai", value=today,
+                                        key="diag_d2", label_visibility="visible")
+
         df_base = df.copy()
         if f_time == "Hari Ini":
             df_base = df_base[df_base["Date"].dt.date == today]
@@ -261,6 +272,11 @@ class DiagnosticPage:
             df_base = df_base[df_base["Date"].dt.date >= today - timedelta(days=6)]
         elif f_time == "30 Hari Terakhir":
             df_base = df_base[df_base["Date"].dt.date >= today - timedelta(days=29)]
+        elif f_time == "Custom":
+            df_base = df_base[
+                (df_base["Date"].dt.date >= diag_d1) &
+                (df_base["Date"].dt.date <= diag_d2)
+            ]
 
         shift_val_map = {"Shift 1": "1", "Shift 2": "2", "Shift 3": "3"}
         if f_shift != "Semua Shift":
