@@ -731,8 +731,30 @@ COORD_DB = {
         {"name": "P203",  "value": [659, 319]},
         {"name": "P204",  "value": [640, 196]},
     ],
-    "K60_GV":   [],
-    "K1AL_GV":  [],
+    "K60_GV": [
+        {"name": "M202", "value": [638, 165]},
+        {"name": "M201", "value": [445, 285]},
+        {"name": "N702", "value": [338, 420]},
+        {"name": "N700", "value": [495, 420]},
+        {"name": "N701", "value": [642, 420]},
+        {"name": "N703", "value": [795, 420]},
+    ],
+    "K1AL_GV": [
+        {"name": "S064", "value": [335, 112]},
+        {"name": "L104", "value": [468, 118]},
+        {"name": "L105", "value": [598, 118]},
+        {"name": "S063", "value": [722, 112]},
+        {"name": "P101", "value": [793, 143]},
+        {"name": "P201", "value": [326, 202]},
+        {"name": "S003", "value": [784, 210]},
+        {"name": "P202", "value": [784, 256]},
+        {"name": "S002", "value": [321, 298]},
+        {"name": "S001", "value": [784, 320]},
+        {"name": "S052", "value": [302, 373]},
+        {"name": "S051", "value": [763, 378]},
+        {"name": "P000", "value": [387, 415]},
+        {"name": "P001", "value": [573, 415]},
+    ],
 
     # ── CYL HEAD CAM ─────────────────────────────────────────────────
     "K2SA_CAM": [
@@ -750,9 +772,113 @@ COORD_DB = {
         {"name": "N506",  "value": [843, 336]},
         {"name": "N507",  "value": [913, 336]},
     ],
-    "K60_CAM":      [],
-    "K1AL_L2_CAM":  [],
-    "K1AL_L3_CAM":  [],
+    "K60_CAM": [
+        {"name": "L101", "value": [508, 112]},
+        {"name": "L103", "value": [600, 122]},
+        {"name": "L102", "value": [682, 122]},
+        {"name": "L100", "value": [963, 138]},
+        {"name": "N504", "value": [243, 232]},
+        {"name": "N505", "value": [343, 222]},
+        {"name": "N507", "value": [1032, 222]},
+        {"name": "N503", "value": [197, 295]},
+        {"name": "N501", "value": [277, 382]},
+        {"name": "N502", "value": [378, 412]},
+        {"name": "N506", "value": [648, 382]},
+    ],
+    "K1AL_L2_CAM": [
+        # V1 — top face
+        {"name": "S064", "value": [121,  47]},
+        {"name": "L104", "value": [175,  47]},
+        {"name": "L105", "value": [215,  47]},
+        {"name": "S063", "value": [260,  43]},
+        {"name": "P101", "value": [295,  70]},
+        {"name": "P201", "value": [ 93, 113]},
+        {"name": "S003", "value": [267, 113]},
+        {"name": "P202", "value": [265, 140]},
+        {"name": "S002", "value": [ 93, 167]},
+        {"name": "S001", "value": [262, 170]},
+        {"name": "S052", "value": [ 97, 215]},
+        {"name": "S051", "value": [265, 210]},
+        {"name": "P000", "value": [140, 233]},
+        {"name": "P001", "value": [210, 233]},
+        # V2 — face 2
+        {"name": "M063", "value": [500,  35]},
+        {"name": "M202", "value": [495, 110]},
+        {"name": "M051", "value": [490, 183]},
+        # V3 — dua side view
+        {"name": "M064", "value": [668,  33]},
+        {"name": "M201", "value": [672, 117]},
+        {"name": "M052", "value": [672, 203]},
+        {"name": "N702", "value": [860,  73]},
+        {"name": "M204", "value": [810, 123]},
+        {"name": "N701", "value": [858, 220]},
+        # V4
+        {"name": "N700", "value": [1020, 115]},
+        {"name": "N703", "value": [1005, 200]},
+        # V5 — bottom face
+        {"name": "L101", "value": [ 97, 283]},
+        {"name": "L103", "value": [163, 287]},
+        {"name": "L102", "value": [225, 287]},
+        {"name": "L100", "value": [143, 460]},
+        # V6
+        {"name": "S000", "value": [450, 260]},
+        {"name": "M000", "value": [418, 490]},
+        # V7 — KOJA face
+        {"name": "M205", "value": [635, 360]},
+        {"name": "N802", "value": [682, 455]},
+        {"name": "N800", "value": [762, 453]},
+        {"name": "N801", "value": [825, 453]},
+        # V8
+        {"name": "N005", "value": [965, 310]},
+        {"name": "N004", "value": [965, 395]},
+    ],
+    "K1AL_L3_CAM": [
+        # V1 — top face
+        {"name": "S064", "value": [121,  47]},
+        {"name": "L104", "value": [175,  47]},
+        {"name": "L105", "value": [215,  47]},
+        {"name": "S063", "value": [260,  43]},
+        {"name": "P101", "value": [295,  70]},
+        {"name": "P201", "value": [ 93, 113]},
+        {"name": "S003", "value": [267, 113]},
+        {"name": "P202", "value": [265, 140]},
+        {"name": "S002", "value": [ 93, 167]},
+        {"name": "S001", "value": [262, 170]},
+        {"name": "S052", "value": [ 97, 215]},
+        {"name": "S051", "value": [265, 210]},
+        {"name": "P000", "value": [140, 233]},
+        {"name": "P001", "value": [210, 233]},
+        # V2 — face 2
+        {"name": "M063", "value": [500,  35]},
+        {"name": "M202", "value": [495, 110]},
+        {"name": "M051", "value": [490, 183]},
+        # V3
+        {"name": "M064", "value": [668,  33]},
+        {"name": "M201", "value": [672, 117]},
+        {"name": "M052", "value": [672, 203]},
+        {"name": "N702", "value": [860,  73]},
+        {"name": "M204", "value": [810, 123]},
+        {"name": "N701", "value": [858, 220]},
+        # V4
+        {"name": "N700", "value": [1020, 115]},
+        {"name": "N703", "value": [1005, 200]},
+        # V5
+        {"name": "L101", "value": [ 97, 283]},
+        {"name": "L103", "value": [163, 287]},
+        {"name": "L102", "value": [225, 287]},
+        {"name": "L100", "value": [143, 460]},
+        # V6
+        {"name": "S000", "value": [450, 260]},
+        {"name": "M000", "value": [418, 490]},
+        # V7
+        {"name": "M205", "value": [635, 360]},
+        {"name": "N802", "value": [682, 455]},
+        {"name": "N800", "value": [762, 453]},
+        {"name": "N801", "value": [825, 453]},
+        # V8
+        {"name": "N005", "value": [965, 310]},
+        {"name": "N004", "value": [965, 395]},
+    ],
 
     # ── CYL HEAD NT ──────────────────────────────────────────────────
     "K2SA_NT": [
@@ -790,9 +916,158 @@ COORD_DB = {
         {"name": "L105",  "value": [1036, 424]},
         {"name": "P203",  "value": [1064,  72]},
     ],
-    "K60_NT":       [],
-    "K1AL_L2_NT":   [],
-    "K1AL_L3_NT":   [],
+    "K60_NT": [
+        # R1V1 — top face
+        {"name": "S052", "value": [120,  43]},
+        {"name": "S054", "value": [185,  43]},
+        {"name": "P000", "value": [ 70, 203]},
+        {"name": "S051", "value": [140, 203]},
+        {"name": "S063", "value": [210, 203]},
+        # R1V2 — face 2
+        {"name": "M051", "value": [420,  70]},
+        {"name": "M052", "value": [325, 180]},
+        {"name": "M064", "value": [525, 205]},
+        # R1V3 — dua side view
+        {"name": "M063", "value": [600,  65]},
+        {"name": "N005", "value": [740,  53]},
+        {"name": "N002", "value": [740, 115]},
+        {"name": "N003", "value": [800, 120]},
+        {"name": "N030", "value": [750, 163]},
+        {"name": "N001", "value": [727, 205]},
+        # R1V4
+        {"name": "N804", "value": [895,  60]},
+        # R2V5 — complex side view
+        {"name": "P104", "value": [175, 285]},
+        {"name": "P101", "value": [230, 285]},
+        {"name": "P202", "value": [278, 285]},
+        {"name": "P004", "value": [102, 315]},
+        {"name": "P006", "value": [ 80, 345]},
+        {"name": "P001", "value": [ 75, 370]},
+        {"name": "P105", "value": [300, 318]},
+        {"name": "L104", "value": [165, 365]},
+        {"name": "P003", "value": [302, 362]},
+        {"name": "P007", "value": [ 75, 395]},
+        {"name": "L105", "value": [172, 418]},
+        {"name": "P002", "value": [ 72, 428]},
+        {"name": "P005", "value": [ 70, 460]},
+        {"name": "P201", "value": [170, 455]},
+        {"name": "P103", "value": [138, 472]},
+        {"name": "P162", "value": [298, 468]},
+        {"name": "S002", "value": [300, 388]},
+        {"name": "S001", "value": [322, 425]},
+        # R2V6 — CAM face
+        {"name": "L101", "value": [570, 298]},
+        {"name": "L103", "value": [603, 298]},
+        {"name": "L102", "value": [635, 298]},
+        {"name": "N504", "value": [465, 328]},
+        {"name": "N505", "value": [493, 340]},
+        {"name": "N503", "value": [455, 378]},
+        {"name": "N501", "value": [475, 440]},
+        {"name": "N502", "value": [530, 465]},
+        {"name": "N506", "value": [653, 455]},
+        # R2V7 — dua view
+        {"name": "L100", "value": [735, 310]},
+        {"name": "N507", "value": [738, 350]},
+        {"name": "M202", "value": [890, 305]},
+        {"name": "M201", "value": [858, 382]},
+        {"name": "N702", "value": [842, 455]},
+        {"name": "N700", "value": [882, 455]},
+        {"name": "N701", "value": [905, 455]},
+    ],
+    "K1AL_L2_NT": [
+        # V1 — top face
+        {"name": "S064", "value": [121,  47]},
+        {"name": "L104", "value": [175,  47]},
+        {"name": "L105", "value": [215,  47]},
+        {"name": "S063", "value": [260,  43]},
+        {"name": "P101", "value": [295,  70]},
+        {"name": "P201", "value": [ 93, 113]},
+        {"name": "S003", "value": [267, 113]},
+        {"name": "P202", "value": [265, 140]},
+        {"name": "S002", "value": [ 93, 167]},
+        {"name": "S001", "value": [262, 170]},
+        {"name": "S052", "value": [ 97, 215]},
+        {"name": "S051", "value": [265, 210]},
+        {"name": "P000", "value": [140, 233]},
+        {"name": "P001", "value": [210, 233]},
+        # V2
+        {"name": "M063", "value": [500,  35]},
+        {"name": "M202", "value": [495, 110]},
+        {"name": "M051", "value": [490, 183]},
+        # V3
+        {"name": "M064", "value": [668,  33]},
+        {"name": "M201", "value": [672, 117]},
+        {"name": "M052", "value": [672, 203]},
+        {"name": "N702", "value": [860,  73]},
+        {"name": "M204", "value": [810, 123]},
+        {"name": "N701", "value": [858, 220]},
+        # V4
+        {"name": "N700", "value": [1020, 115]},
+        {"name": "N703", "value": [1005, 200]},
+        # V5
+        {"name": "L101", "value": [ 97, 283]},
+        {"name": "L103", "value": [163, 287]},
+        {"name": "L102", "value": [225, 287]},
+        {"name": "L100", "value": [143, 460]},
+        # V6
+        {"name": "S000", "value": [450, 260]},
+        {"name": "M000", "value": [418, 490]},
+        # V7 — KOJA face (N801 di V8 untuk NT)
+        {"name": "M205", "value": [635, 360]},
+        {"name": "N802", "value": [682, 455]},
+        {"name": "N800", "value": [762, 453]},
+        # V8
+        {"name": "N801", "value": [912, 465]},
+        {"name": "N005", "value": [1000, 310]},
+        {"name": "N004", "value": [1000, 395]},
+    ],
+    "K1AL_L3_NT": [
+        # V1 — top face
+        {"name": "S064", "value": [121,  47]},
+        {"name": "L104", "value": [175,  47]},
+        {"name": "L105", "value": [215,  47]},
+        {"name": "S063", "value": [260,  43]},
+        {"name": "P101", "value": [295,  70]},
+        {"name": "P201", "value": [ 93, 113]},
+        {"name": "S003", "value": [267, 113]},
+        {"name": "P202", "value": [265, 140]},
+        {"name": "S002", "value": [ 93, 167]},
+        {"name": "S001", "value": [262, 170]},
+        {"name": "S052", "value": [ 97, 215]},
+        {"name": "S051", "value": [265, 210]},
+        {"name": "P000", "value": [140, 233]},
+        {"name": "P001", "value": [210, 233]},
+        # V2
+        {"name": "M063", "value": [500,  35]},
+        {"name": "M202", "value": [495, 110]},
+        {"name": "M051", "value": [490, 183]},
+        # V3
+        {"name": "M064", "value": [668,  33]},
+        {"name": "M201", "value": [672, 117]},
+        {"name": "M052", "value": [672, 203]},
+        {"name": "N702", "value": [860,  73]},
+        {"name": "M204", "value": [810, 123]},
+        {"name": "N701", "value": [858, 220]},
+        # V4
+        {"name": "N700", "value": [1020, 115]},
+        {"name": "N703", "value": [1005, 200]},
+        # V5
+        {"name": "L101", "value": [ 97, 283]},
+        {"name": "L103", "value": [163, 287]},
+        {"name": "L102", "value": [225, 287]},
+        {"name": "L100", "value": [143, 460]},
+        # V6
+        {"name": "S000", "value": [450, 260]},
+        {"name": "M000", "value": [418, 490]},
+        # V7
+        {"name": "M205", "value": [635, 360]},
+        {"name": "N802", "value": [682, 455]},
+        {"name": "N800", "value": [762, 453]},
+        # V8
+        {"name": "N801", "value": [912, 465]},
+        {"name": "N005", "value": [1000, 310]},
+        {"name": "N004", "value": [1000, 395]},
+    ],
 
     # ── CYL HEAD ROUGH ───────────────────────────────────────────────
     "K2SA_ROUGH": [
@@ -802,10 +1077,56 @@ COORD_DB = {
         {"name": "M051",  "value": [739,  55]},
     ],
     "K60_ROUGH":    [],
-    "K1AL_ROUGH":   [],
+    "K1AL_ROUGH": [
+        # V1 — top face
+        {"name": "S064", "value": [121,  47]},
+        {"name": "L104", "value": [175,  47]},
+        {"name": "L105", "value": [215,  47]},
+        {"name": "P201", "value": [ 93, 113]},
+        {"name": "S002", "value": [ 93, 167]},
+        {"name": "S052", "value": [ 97, 215]},
+        {"name": "P000", "value": [140, 233]},
+        {"name": "P001", "value": [210, 233]},
+        # V2
+        {"name": "M063", "value": [500,  35]},
+        {"name": "M202", "value": [495, 110]},
+        {"name": "M051", "value": [490, 183]},
+        # V3
+        {"name": "M064", "value": [668,  33]},
+        {"name": "M201", "value": [672, 117]},
+        {"name": "M052", "value": [672, 203]},
+        {"name": "N702", "value": [860,  73]},
+        {"name": "M204", "value": [810, 123]},
+        {"name": "N701", "value": [858, 220]},
+        # V4
+        {"name": "N700", "value": [1020, 115]},
+        {"name": "N703", "value": [1005, 200]},
+        # V5
+        {"name": "L101", "value": [ 97, 283]},
+        {"name": "L103", "value": [163, 287]},
+        {"name": "L102", "value": [225, 287]},
+        {"name": "L100", "value": [143, 460]},
+        # V6
+        {"name": "S000", "value": [450, 260]},
+        {"name": "M000", "value": [418, 490]},
+        # V7
+        {"name": "N005", "value": [635, 275]},
+        {"name": "M203", "value": [775, 355]},
+        # V8
+        {"name": "N800", "value": [950, 450]},
+        {"name": "N801", "value": [990, 450]},
+        {"name": "N805", "value": [1110, 350]},
+        {"name": "N804", "value": [1120, 415]},
+    ],
 
     # ── HOLDER WATER PUMP ────────────────────────────────────────────
-    "K60_HWP":      [],
+    "K60_HWP": [
+        {"name": "N004", "value": [113, 373]},
+        {"name": "N007", "value": [196, 368]},
+        {"name": "N000", "value": [355, 370]},
+        {"name": "N006", "value": [443, 363]},
+        {"name": "N005", "value": [493, 358]},
+    ],
 }
 
 
@@ -1113,15 +1434,34 @@ class DescriptivePage:
         if q1_type == "Bar":
             # Bar: OK vs NG per Part (no time)
             _l1_ok_pct, _l1_ng_pct = [], []
+            _l1_ok_cnt, _l1_ng_cnt = [], []
             for p in parts_avail:
                 _g = df[df["PartName"]==p]; _t = len(_g)
-                _l1_ok_pct.append(round((_g["Judgement"]=="OK").sum()/_t*100,1) if _t else 0)
-                _l1_ng_pct.append(round((_g["Judgement"]=="NG").sum()/_t*100,1) if _t else 0)
+                _ok = int((_g["Judgement"]=="OK").sum())
+                _ng = int((_g["Judgement"]=="NG").sum())
+                _l1_ok_pct.append(round(_ok/_t*100,1) if _t else 0)
+                _l1_ng_pct.append(round(_ng/_t*100,1) if _t else 0)
+                _l1_ok_cnt.append(_ok)
+                _l1_ng_cnt.append(_ng)
+            import json as _jl1
+            _l1_ok_js = _jl1.dumps(_l1_ok_cnt)
+            _l1_ng_js = _jl1.dumps(_l1_ng_cnt)
+            _l1_parts_js = _jl1.dumps(parts_avail)
+            _tt_l1_bar = JsCode(
+                "function(p){"
+                "var ok_cnt="+_l1_ok_js+";var ng_cnt="+_l1_ng_js+";"
+                "var idx=p[0].dataIndex;"
+                "var ok=ok_cnt[idx],ng=ng_cnt[idx],tot=ok+ng;"
+                "return '<b>'+p[0].axisValue+'</b><br/>"
+                "OK: <b style=color:#22C55E;>'+ok+'</b> ('+p[0].value+'%)<br/>"
+                "NG: <b style=color:#EF4444;>'+ng+'</b> ('+(p[1]?p[1].value:0)+'%)<br/>"
+                "Total: <b>'+tot+'</b>';}"
+            )
             st_echarts({
                 "title": {"text": "OK% vs NG% per Part",
                           "subtext": self._quick_periode_title,
                           "textStyle": {"fontSize": 13, "fontWeight": 700}},
-                "tooltip": {"trigger": "axis"},
+                "tooltip": {"trigger": "axis", "formatter": _tt_l1_bar},
                 "legend": {"data": ["OK%","NG%"], "top": 8, "right": 8,
                            "icon": "circle", "itemWidth": 8, "textStyle": {"fontSize": 11}},
                 "grid": {"top": 48, "bottom": 32, "left": 48, "right": 20},
@@ -1141,6 +1481,30 @@ class DescriptivePage:
             df_t = df.copy().sort_values("Date")
             df_t["_d"] = df_t["Date"].dt.strftime("%d %b")
             x_labels = df_t["_d"].unique().tolist()
+            # Siapkan data OK/NG count per part per tanggal untuk tooltip
+            import json as _jl1l
+            _ok_map, _ng_map = {}, {}
+            for pn in parts_avail:
+                df_p = df_t[df_t["PartName"]==pn]
+                tc   = pd.crosstab(df_p["_d"], df_p["Judgement"]).reindex(x_labels).fillna(0)
+                if "OK" not in tc.columns: tc["OK"] = 0
+                if "NG" not in tc.columns: tc["NG"] = 0
+                _ok_map[pn] = tc["OK"].astype(int).tolist()
+                _ng_map[pn] = tc["NG"].astype(int).tolist()
+            _ok_map_js = _jl1l.dumps(_ok_map)
+            _ng_map_js = _jl1l.dumps(_ng_map)
+            _tt_l1_line = JsCode(
+                "function(p){"
+                "var ok_m="+_ok_map_js+";var ng_m="+_ng_map_js+";"
+                "var idx=p[0].dataIndex;"
+                "var lines='<b>'+p[0].axisValue+'</b><br/>';"
+                "p.forEach(function(s){"
+                "var ok=ok_m[s.seriesName]?ok_m[s.seriesName][idx]:0;"
+                "var ng=ng_m[s.seriesName]?ng_m[s.seriesName][idx]:0;"
+                "lines+=s.marker+s.seriesName+': <b>'+s.value+'%</b>"
+                " (OK:'+ok+' NG:'+ng+')<br/>';"
+                "});return lines;}"
+            )
             series_l1 = []
             for i, pn in enumerate(parts_avail):
                 df_p = df_t[df_t["PartName"]==pn]
@@ -1158,7 +1522,7 @@ class DescriptivePage:
             st_echarts({
                 "title": {"text": "Trend OK%", "subtext": "Per Part",
                           "textStyle": {"fontSize": 13, "fontWeight": 700}},
-                "tooltip": {"trigger": "axis"},
+                "tooltip": {"trigger": "axis", "formatter": _tt_l1_line},
                 "legend": {"data": parts_avail, "top": 8, "right": 8,
                            "icon": "circle", "itemWidth": 8,
                            "textStyle": {"fontSize": 11}},
@@ -1337,15 +1701,31 @@ class DescriptivePage:
 
         if q2_type == "Bar":
             _l2_ok_pct, _l2_ng_pct = [], []
+            _l2_ok_cnt, _l2_ng_cnt = [], []
             for m in models_avail:
                 _g = df_p[df_p["ModelName"]==m]; _t = len(_g)
-                _l2_ok_pct.append(round((_g["Judgement"]=="OK").sum()/_t*100,1) if _t else 0)
-                _l2_ng_pct.append(round((_g["Judgement"]=="NG").sum()/_t*100,1) if _t else 0)
+                _ok = int((_g["Judgement"]=="OK").sum())
+                _ng = int((_g["Judgement"]=="NG").sum())
+                _l2_ok_pct.append(round(_ok/_t*100,1) if _t else 0)
+                _l2_ng_pct.append(round(_ng/_t*100,1) if _t else 0)
+                _l2_ok_cnt.append(_ok)
+                _l2_ng_cnt.append(_ng)
+            import json as _jl2
+            _tt_l2_bar = JsCode(
+                "function(p){"
+                "var ok_cnt="+_jl2.dumps(_l2_ok_cnt)+";var ng_cnt="+_jl2.dumps(_l2_ng_cnt)+";"
+                "var idx=p[0].dataIndex;"
+                "var ok=ok_cnt[idx],ng=ng_cnt[idx],tot=ok+ng;"
+                "return '<b>'+p[0].axisValue+'</b><br/>"
+                "OK: <b style=color:#22C55E;>'+ok+'</b> ('+p[0].value+'%)<br/>"
+                "NG: <b style=color:#EF4444;>'+ng+'</b> ('+(p[1]?p[1].value:0)+'%)<br/>"
+                "Total: <b>'+tot+'</b>';}"
+            )
             st_echarts({
                 "title": {"text": f"OK vs NG per Model — {part}",
                           "subtext": self._quick_periode_title,
                           "textStyle": {"fontSize": 13, "fontWeight": 700}},
-                "tooltip": {"trigger": "axis"},
+                "tooltip": {"trigger": "axis", "formatter": _tt_l2_bar},
                 "legend": {"data": ["OK%","NG%"], "top": 8, "right": 8,
                            "icon": "circle", "itemWidth": 8, "textStyle": {"fontSize": 11}},
                 "grid": {"top": 48, "bottom": 32, "left": 48, "right": 20},
@@ -1373,11 +1753,15 @@ class DescriptivePage:
                 tc = pd.crosstab(df_m["_d"], df_m["Judgement"])
                 return tc.reindex(x_labels).fillna(0)
 
+            import json as _jl2l
+            _ok_map_l2, _ng_map_l2 = {}, {}
             series_l2 = []
             for i, mn in enumerate(models_avail):
                 tc = _get_x(df_t[df_t["ModelName"]==mn])
                 if "OK" not in tc.columns: tc["OK"] = 0
                 if "NG" not in tc.columns: tc["NG"] = 0
+                _ok_map_l2[mn] = tc["OK"].astype(int).tolist()
+                _ng_map_l2[mn] = tc["NG"].astype(int).tolist()
                 pct = (tc["OK"]/(tc["OK"]+tc["NG"])*100).round(1).fillna(0).tolist()
                 series_l2.append({
                     "name": mn, "type": "line", "smooth": True,
@@ -1385,10 +1769,22 @@ class DescriptivePage:
                     "itemStyle": {"color": COLORS[i%len(COLORS)]},
                     "symbol": "circle", "symbolSize": 5,
                 })
+            _tt_l2_line = JsCode(
+                "function(p){"
+                "var ok_m="+_jl2l.dumps(_ok_map_l2)+";var ng_m="+_jl2l.dumps(_ng_map_l2)+";"
+                "var idx=p[0].dataIndex;"
+                "var lines='<b>'+p[0].axisValue+'</b><br/>';"
+                "p.forEach(function(s){"
+                "var ok=ok_m[s.seriesName]?ok_m[s.seriesName][idx]:0;"
+                "var ng=ng_m[s.seriesName]?ng_m[s.seriesName][idx]:0;"
+                "lines+=s.marker+s.seriesName+': <b>'+s.value+'%</b>"
+                " (OK:'+ok+' NG:'+ng+')<br/>';"
+                "});return lines;}"
+            )
             st_echarts({
                 "title": {"text": f"Trend OK% — {part}", "subtext": subtext,
                           "textStyle": {"fontSize": 13, "fontWeight": 700}},
-                "tooltip": {"trigger": "axis"},
+                "tooltip": {"trigger": "axis", "formatter": _tt_l2_line},
                 "legend": {"data": models_avail, "top": 8, "right": 8,
                            "icon": "circle", "itemWidth": 8, "textStyle": {"fontSize": 11}},
                 "grid": {"top": 48, "bottom": 32, "left": 52, "right": 20},
@@ -1535,9 +1931,9 @@ class DescriptivePage:
                     "series": [{"type": "scatter", "symbol": "circle", "symbolSize": 12,
                                 "itemStyle": {"color": "rgba(220,38,38,0.1)",
                                               "borderColor": "#DC2626", "borderWidth": 0},
-                                "emphasis": {"itemStyle": {"color": "#22C55E",
-                                                           "borderColor": "#16A34A"},
-                                             "symbolSize": 24},
+                                "emphasis": {"itemStyle": {"borderColor": "#ffffff",
+                                                           "borderWidth": 2},
+                                             "symbolSize": 18},
                                 "data": points_data}],
                 },
                 events={"click": """function(params) {
@@ -1554,24 +1950,18 @@ class DescriptivePage:
                 key="q3_schema_quick",
             )
 
-            # Set refs yang punya NG — hanya ini yang boleh drill-down
-            ng_refs = set(
-                df_pm[df_pm["Judgement"]=="NG"]["ref"]
-                .astype(str).str.strip().str.upper().unique()
-            )
-
+            # Semua ref bisa di-drill-down (termasuk 0 NG)
             if clicked_q3:
                 if isinstance(clicked_q3, dict):
                     ev = clicked_q3.get("chart_event", clicked_q3)
                     if isinstance(ev, dict) and ev.get("type") == "marked":
                         ref_name = ev.get("name", "")
-                        if ref_name and ref_name.upper() in ng_refs:
+                        if ref_name:
                             st.session_state["quick_ref"] = ref_name
                             st.rerun()
                 elif isinstance(clicked_q3, str) and clicked_q3 not in ("null","Area Kosong",""):
-                    if clicked_q3.upper() in ng_refs:
-                        st.session_state["quick_ref"] = clicked_q3
-                        st.rerun()
+                    st.session_state["quick_ref"] = clicked_q3
+                    st.rerun()
 
         # KP per ref
         kp_refs = set()
@@ -1599,8 +1989,16 @@ class DescriptivePage:
         samp_js_r = _json.dumps(param_dist, ensure_ascii=False)
         kp_js_r   = _json.dumps(kp_dist_r,  ensure_ascii=False)
 
-        bar_colors_r = ["#EF4444" if lbl in kp_refs else "#3B82F6"
-                        for lbl in reversed(labels_r)]
+        bar_colors_r = []
+        for lbl in reversed(labels_r):
+            idx = labels_r.index(lbl)
+            v   = values_r[idx]
+            if v == 0:
+                bar_colors_r.append("#94A3B8")   # abu — 0 NG, tetap clickable
+            elif lbl in kp_refs:
+                bar_colors_r.append("#EF4444")   # merah — KP NG
+            else:
+                bar_colors_r.append("#3B82F6")   # biru — non-KP NG
         bar_vals_r   = list(reversed(values_r))
         clr_js_r     = _json.dumps(bar_colors_r)
 
@@ -1704,6 +2102,7 @@ class DescriptivePage:
             snos_bar  = sorted(df_pm["SampleNo"].astype(str).unique(),
                                key=lambda s: [int(c) if c.isdigit() else c.lower() for c in re.split(r"(\d+)", str(s))])
             ok_pct, ng_pct, tot_list = [], [], []
+            ok_cnt_l3, ng_cnt_l3 = [], []
             for sno in snos_bar:
                 grp = df_pm[df_pm["SampleNo"].astype(str)==sno]
                 tot = len(grp)
@@ -1712,12 +2111,24 @@ class DescriptivePage:
                 ok_pct.append(round(ok/tot*100,1) if tot else 0)
                 ng_pct.append(round(ng/tot*100,1) if tot else 0)
                 tot_list.append(tot)
+                ok_cnt_l3.append(ok)
+                ng_cnt_l3.append(ng)
+            import json as _jl3
+            _tt_l3_bar = JsCode(
+                "function(p){"
+                "var ok_cnt="+_jl3.dumps(ok_cnt_l3)+";var ng_cnt="+_jl3.dumps(ng_cnt_l3)+";"
+                "var idx=p[0].dataIndex;"
+                "var ok=ok_cnt[idx],ng=ng_cnt[idx],tot=ok+ng;"
+                "return '<b>Sample '+p[0].axisValue+'</b><br/>"
+                "OK: <b style=color:#22C55E;>'+ok+'</b> ('+p[0].value+'%)<br/>"
+                "NG: <b style=color:#EF4444;>'+ng+'</b> ('+(p[1]?p[1].value:0)+'%)<br/>"
+                "Total: <b>'+tot+'</b>';}"
+            )
             st_echarts({
                 "title": {"text": f"OK% vs NG% per Sample — {part} · {model}",
                           "subtext": self._quick_periode_title,
                           "textStyle": {"fontSize": 13, "fontWeight": 700}},
-                "tooltip": {"trigger": "axis",
-                            "formatter": "function(p){var s=p[0].axisValue;var ok=p[0].value,ng=p[1]?p[1].value:0;return s+'<br/>OK: <b>'+ok+'%</b><br/>NG: <b>'+ng+'%</b>';}"},
+                "tooltip": {"trigger": "axis", "formatter": _tt_l3_bar},
                 "legend": {"data": ["OK%","NG%"], "top": 8, "right": 8,
                            "icon": "circle", "itemWidth": 8, "textStyle": {"fontSize": 11}},
                 "grid": {"top": 48, "bottom": 32, "left": 48, "right": 20},
@@ -1739,15 +2150,17 @@ class DescriptivePage:
             # Line chart: OK% per SampleNo per waktu
             COLORS = ["#6366F1","#F59E0B","#10B981","#EF4444","#8B5CF6","#06B6D4",
                       "#EC4899","#84CC16","#F97316","#14B8A6","#A78BFA","#FB923C"]
+            import json as _jl3l
+            _ok_map_l3, _ng_map_l3 = {}, {}
             series_l3 = []
             for i, sno in enumerate(snos):
-                df_s = df_t[df_t["SampleNo"].astype(str)==sno]
-                df_s2 = df_s.copy()
-                df_s2["_d"] = df_s2["Date"].dt.strftime("%d %b")
-                tc = pd.crosstab(df_s2["_d"], df_s2["Judgement"])
-                tc = tc.reindex(x_labels).fillna(0)
+                df_s = df_t[df_t["SampleNo"].astype(str)==sno].copy()
+                df_s["_d"] = df_s["Date"].dt.strftime("%d %b")
+                tc = pd.crosstab(df_s["_d"], df_s["Judgement"]).reindex(x_labels).fillna(0)
                 if "OK" not in tc.columns: tc["OK"] = 0
                 if "NG" not in tc.columns: tc["NG"] = 0
+                _ok_map_l3[str(sno)] = tc["OK"].astype(int).tolist()
+                _ng_map_l3[str(sno)] = tc["NG"].astype(int).tolist()
                 pct = (tc["OK"]/(tc["OK"]+tc["NG"])*100).round(1).fillna(0).tolist()
                 series_l3.append({
                     "name": str(sno), "type": "line", "smooth": True,
@@ -1755,10 +2168,22 @@ class DescriptivePage:
                     "itemStyle": {"color": COLORS[i%len(COLORS)]},
                     "symbol": "circle", "symbolSize": 5,
                 })
+            _tt_l3_line = JsCode(
+                "function(p){"
+                "var ok_m="+_jl3l.dumps(_ok_map_l3)+";var ng_m="+_jl3l.dumps(_ng_map_l3)+";"
+                "var idx=p[0].dataIndex;"
+                "var lines='<b>'+p[0].axisValue+'</b><br/>';"
+                "p.forEach(function(s){"
+                "var ok=ok_m[s.seriesName]?ok_m[s.seriesName][idx]:0;"
+                "var ng=ng_m[s.seriesName]?ng_m[s.seriesName][idx]:0;"
+                "lines+=s.marker+'No.'+s.seriesName+': <b>'+s.value+'%</b>"
+                " (OK:'+ok+' NG:'+ng+')<br/>';"
+                "});return lines;}"
+            )
             st_echarts({
                 "title": {"text": f"Trend OK% — {part} · {model}", "subtext": subtext,
                           "textStyle": {"fontSize": 13, "fontWeight": 700}},
-                "tooltip": {"trigger": "axis"},
+                "tooltip": {"trigger": "axis", "formatter": _tt_l3_line},
                 "legend": {"data": snos, "top": 8, "right": 8,
                            "icon": "circle", "itemWidth": 8, "textStyle": {"fontSize": 11}},
                 "grid": {"top": 48, "bottom": 32, "left": 52, "right": 20},
@@ -1815,8 +2240,16 @@ class DescriptivePage:
         labels  = ng_count.index.astype(str).tolist()
         values  = [int(v) for v in ng_count.values]
         total   = max(sum(values), 1)
-        bar_colors = ["#EF4444" if lbl in kp_params else "#3B82F6"
-                      for lbl in reversed(labels)]
+        bar_colors = []
+        for lbl in reversed(labels):
+            idx = labels.index(lbl)
+            v   = values[idx]
+            if v == 0:
+                bar_colors.append("#94A3B8")   # abu — 0 NG, tetap clickable
+            elif lbl in kp_params:
+                bar_colors.append("#EF4444")   # merah — KP NG
+            else:
+                bar_colors.append("#3B82F6")   # biru — non-KP NG
         bar_vals   = list(reversed(values))
         import json as _json
         samp_dist = {}
@@ -2123,6 +2556,14 @@ class DescriptivePage:
             st.session_state["shared_part"]  = "All Part"
             st.session_state["shared_model"] = "All Model"
 
+        # Konsumsi flag search — set Part+Model+Ref sebelum widget dirender
+        if st.session_state.get("_search_target_ref"):
+            st.session_state["shared_part"]  = st.session_state.pop("_search_target_part", "All Part")
+            st.session_state["shared_model"] = st.session_state.pop("_search_target_model", "All Model")
+            st.session_state["active_ref"]   = st.session_state.pop("_search_target_ref")
+            st.session_state["active_event"] = "marked"
+            st.session_state["_search_just_applied"] = True  # flag: jangan reset active_ref
+
         filters = build_filters(self.df_all, session_prefix="shared")
         df      = apply_filters(self.df_all, filters)
 
@@ -2130,13 +2571,18 @@ class DescriptivePage:
         f_part  = filters["part"]
         f_model = filters["model"]
 
-        # Reset active_ref kalau Part atau Model berubah
+        # Reset active_ref kalau Part atau Model berubah secara MANUAL
+        # (bukan dari search — search sudah set Part+Model+Ref bersamaan)
         _p_key, _m_key = "_deep_prev_part", "_deep_prev_model"
+        _from_search = st.session_state.get("_search_just_applied", False)
+        if _from_search:
+            st.session_state.pop("_search_just_applied", None)
         if (st.session_state.get(_p_key) != f_part or
                 st.session_state.get(_m_key) != f_model):
             st.session_state[_p_key] = f_part
             st.session_state[_m_key] = f_model
-            if st.session_state.get("active_ref"):
+            # Jangan reset active_ref kalau perubahan ini dari search
+            if st.session_state.get("active_ref") and not _from_search:
                 st.session_state["active_ref"]   = None
                 st.session_state["active_event"] = "marked"
                 st.rerun()
@@ -2171,6 +2617,54 @@ class DescriptivePage:
 
         self._render_deep_breadcrumb()
         st.markdown('<div class="row-gap"></div>', unsafe_allow_html=True)
+
+        # ── Search bar — langsung ke titik ───────────────────────────
+        if not df.empty:
+            # Bangun opsi: "REF · Part · Model" agar identitas jelas
+            _ref_rows = (
+                self.df_all[["ref","PartName","ModelName"]]
+                .dropna(subset=["ref"])
+                .drop_duplicates()
+            )
+            _ref_rows = _ref_rows[
+                _ref_rows["ref"].astype(str).str.strip().isin(
+                    [r for r in self.df_all["ref"].dropna().astype(str).unique()
+                     if r.strip() not in ("","-","nan")]
+                )
+            ]
+            # Terapkan filter Part+Model aktif supaya opsi menyempit kalau sudah filter
+            if f_part not in ("All Part",""):
+                _ref_rows = _ref_rows[_ref_rows["PartName"]==f_part]
+            if f_model not in ("All Model",""):
+                _ref_rows = _ref_rows[_ref_rows["ModelName"]==f_model]
+
+            _search_opts = sorted([
+                f"{r['ref']} · {r['PartName']} · {r['ModelName']}"
+                for _, r in _ref_rows.iterrows()
+            ])
+
+            if _search_opts:
+                _sc1, _sc2 = st.columns([3, 1], gap="small")
+                with _sc1:
+                    _search_val = st.selectbox(
+                        "🔍 Cari Titik",
+                        ["— Pilih atau ketik titik —"] + _search_opts,
+                        key="deep_search_ref",
+                        label_visibility="collapsed",
+                    )
+                with _sc2:
+                    if st.button("➤ Langsung ke Titik", key="deep_search_go",
+                                 use_container_width=True,
+                                 disabled=_search_val == "— Pilih atau ketik titik —"):
+                        _parts = _search_val.split(" · ", 2)
+                        if len(_parts) == 3:
+                            _s_ref, _s_part, _s_model = _parts
+                            # Pakai flag — tidak langsung modif widget key
+                            st.session_state["_search_target_part"]  = _s_part
+                            st.session_state["_search_target_model"] = _s_model
+                            st.session_state["_search_target_ref"]   = _s_ref
+                            st.rerun()
+
         total_part = df.groupby([df["Date"].dt.date, "Cycle", "PartName", "ModelName"]).ngroups if not df.empty else 0
 
 
@@ -2215,25 +2709,61 @@ class DescriptivePage:
                              f"  Total NG: {_n_ng_deep}  |  KP NG: {_n_kpng_deep}")
 
 # Ambil data point dari COORD_DB dan warnai otomatis (Lampu Indikator)
+            # Bangun tooltip per titik — sama seperti Quick Level 3
             points_data = []
             for pt in COORD_DB.get(active_key, []):
-                # Filter data spesifik untuk titik (ref) ini
-                df_pt = df[df["ref"].astype(str).str.strip().str.upper() == pt["name"].upper()]
-                
-                # Cek ketersediaan data dan statusnya
+                ref_name = pt["name"].upper()
+                df_pt    = df[df["ref"].astype(str).str.strip().str.upper()==ref_name]
+
                 if df_pt.empty:
-                    # Jika tidak ada data sama sekali = Abu-abu
-                    dot_color = "#94A3B8" # Slate 400 (Warna netral yang elegan)
+                    clr     = "#94A3B8"
+                    tip_str = f"<b>{ref_name}</b><br/>Tidak ada data"
                 else:
-                    # Jika ada data, cek apakah ada yang NG
-                    is_ng = (df_pt["Judgement"] == "NG").any()
-                    # Jika pernah NG = Merah, Jika OK semua = Hijau
-                    dot_color = "#EF4444" if is_ng else "#22C55E"
-                
+                    has_ng = (df_pt["Judgement"] == "NG").any()
+                    clr    = "#EF4444" if has_ng else "#22C55E"
+                    n_tot  = len(df_pt)
+                    df_ng  = df_pt[df_pt["Judgement"] == "NG"]
+                    n_ng   = len(df_ng)
+                    pcol   = "point" if "point" in df_pt.columns and df_pt["point"].notna().any() else "Parameter"
+
+                    if not has_ng:
+                        tip_str = (f"<b>{ref_name}</b>"
+                                   f"<br/>✓ Semua OK"
+                                   f"<br/><span style='color:#94A3B8;font-size:10px;'>"
+                                   f"Total: {n_tot} pengukuran</span>")
+                    else:
+                        hr = "<br/><hr style='margin:3px 0;border-color:#334155;border-width:0.5px;'/>"
+                        param_cnt = (df_ng.groupby(pcol).size().sort_values(ascending=False)
+                                     if pcol in df_ng.columns else None)
+                        parts_tip = []
+                        if param_cnt is not None:
+                            for p, c in param_cnt.items():
+                                p_str = str(p)
+                                df_p  = df_ng[df_ng[pcol].astype(str) == p_str]
+                                df_ps = df_p.sort_values("Date", ascending=False) if "Date" in df_p.columns else df_p
+                                last_dev = None
+                                if "Deviation" in df_ps.columns and df_ps["Deviation"].notna().any():
+                                    last_dev = round(float(df_ps["Deviation"].dropna().iloc[0]), 4)
+                                sign = "+" if last_dev is not None and last_dev >= 0 else ""
+                                dev_line = (f"<br/><span style='color:#94A3B8;font-size:10px;'>"
+                                            f"Deviasi NG terbaru: {sign}{last_dev}</span>"
+                                            if last_dev is not None else "")
+                                is_kp_p = ("KP" in df_p.columns and
+                                           df_p["KP"].astype(str).str.strip()
+                                           .isin(["1","True","true","KP"]).any())
+                                kp_lbl  = (" <span style='color:#FBBF24;font-weight:700;'>(KP)</span>"
+                                           if is_kp_p else "")
+                                parts_tip.append(f"<b>{p_str}</b>{kp_lbl} : {int(c)}{dev_line}")
+                        tip_str = (f"<b>{ref_name}</b>"
+                                   f"<br/>Total NG: <b style='color:#EF4444;'>{n_ng}</b>"
+                                   + (hr + hr.join(parts_tip) if parts_tip else ""))
+
                 points_data.append({
-                    "name": pt["name"],
+                    "name":  ref_name,
                     "value": pt["value"],
-                    "itemStyle": {"color": dot_color, "borderColor": "#ffffff", "borderWidth": 1.5, "opacity": 0.9}
+                    "_tip":  tip_str,
+                    "itemStyle": {"color": clr, "borderColor": "#ffffff",
+                                  "borderWidth": 1.5, "opacity": 0.9}
                 })
 
             # 2. ECHARTS OPTIONS
@@ -2275,14 +2805,15 @@ class DescriptivePage:
                     "backgroundColor": "#1E293B",
                     "borderColor": "#334155",
                     "textStyle": {"color": "#F8FAFC", "fontSize": 12},
-                    "formatter": "<b>Titik: {b}</b><br/>👉 Klik untuk memfilter data"
+                    "formatter": JsCode("function(p){ return p.data._tip || ('<b>'+p.name+'</b>'); }")
                 },
                 "series": [{
                     "type": "scatter",
                     "symbol": "circle",
                     "symbolSize": 12,
                     "itemStyle": {"color": "rgba(220, 38, 38, 0.1)", "borderColor": "#DC2626", "borderWidth": 0},
-                    "emphasis": {"itemStyle": {"color": "#22C55E", "borderColor": "#16A34A"}, "symbolSize": 24},
+                    "emphasis": {"itemStyle": {"borderColor": "#ffffff", "borderWidth": 2},
+                                 "symbolSize": 18},
                     "data": points_data
                 }]
                 
@@ -2388,6 +2919,32 @@ class DescriptivePage:
 #            df = df[df[point_col_name].astype(str).str.strip().str.upper() == actual_point.upper()]
 
         # ─────────────────────────────────────────────────────────────────
+        #  KONDISI 4: TITIK DIPILIH — cek duluan, skip kondisi lain
+        # ─────────────────────────────────────────────────────────────────
+        if actual_point and event_type == "marked":
+            df_ref = df[df[point_col_name].astype(str).str.strip().str.upper() == actual_point.upper()]
+            if not df_ref.empty:
+                st.markdown(
+                    f'<div style="font-size:18px;font-weight:700;color:#0F172A;'
+                    f'margin-bottom:16px;">Analisis Titik: {actual_point}</div>',
+                    unsafe_allow_html=True
+                )
+                detail_points = sorted(df_ref["point"].dropna().astype(str).unique().tolist())
+                if detail_points:
+                    selected_detail = st.radio(
+                        f"Pilih parameter untuk point {actual_point}:",
+                        detail_points,
+                        key="detail_point_select",
+                        horizontal=True
+                    )
+                    df_detail = df_ref[df_ref["point"].astype(str) == selected_detail]
+                    self._render_point_detail(
+                        df_detail, actual_point, selected_detail,
+                        key_suffix=f"deep_{actual_point}_{selected_detail}"
+                    )
+            return  # stop — tidak render kondisi 1/2/3
+
+        # ─────────────────────────────────────────────────────────────────
         #  KONDISI 1: GAMBARAN GLOBAL PABRIK (TIDAK MEMILIH FILTER)
         # ─────────────────────────────────────────────────────────────────
         # Syarat Kondisi 1: Tidak ada titik yang diklik, Part = All, Model = All
@@ -2484,25 +3041,48 @@ class DescriptivePage:
                 
                 with row1_col1:
                     # 1. Perbandingan OK Ratio Antar Part
+                    import json as _jk1r
+                    _part_ok_cnt = [int(part_ratio_df.loc[p,"OK"]) if p in part_ratio_df.index else 0 for p in part_x]
+                    _part_ng_cnt = [int(part_ratio_df.loc[p,"NG"]) if p in part_ratio_df.index else 0 for p in part_x]
+                    _tt_part_ratio = JsCode(
+                        "function(p){"
+                        "var ok_cnt="+_jk1r.dumps(_part_ok_cnt)+";var ng_cnt="+_jk1r.dumps(_part_ng_cnt)+";"
+                        "var idx=p[0].dataIndex;"
+                        "var ok=ok_cnt[idx],ng=ng_cnt[idx],tot=ok+ng;"
+                        "return '<b>'+p[0].axisValue+'</b><br/>"
+                        "OK: <b style=color:#22C55E;>'+ok+'</b><br/>"
+                        "NG: <b style=color:#EF4444;>'+ng+'</b><br/>"
+                        "OK Ratio: <b>'+p[0].value+'%</b><br/>"
+                        "Total: <b>'+tot+'</b>';}"
+                    )
                     st_echarts({
                         "title": {"text": f"OK Ratio Antar Part", "subtext": PERIODE_TITLE, "textStyle": {"fontSize": 14, "fontWeight": "bold"}},
-                        "tooltip": {
-                            "trigger": "axis",
-                            "formatter": JsCode("function(params) { return params[0].axisValue + '<br/>' + params.map(p => p.marker + ' ' + p.seriesName + ': <b>' + p.value + '%</b> (' + p.data.count + ' pcs)').join('<br/>'); }")
-                        },
+                        "tooltip": {"trigger": "axis", "formatter": _tt_part_ratio},
                         "yAxis": {"type": "value", "min": 0, "max": 100,
                                 "axisLabel": {"formatter": "{value}%"}},
                         "xAxis": {"type": "category", "data": part_x, "axisLabel": {"interval": 0, "rotate": 30}},
-                        "yAxis": {"type": "value", "max": 100},
                         "series": [{"data": part_ratio_y, "type": "bar", "itemStyle": {"color": "#3B82F6", "borderRadius": [4,4,0,0]}, "label": {"show": True, "position": "top", "formatter": "{c}%"}}],
                         "toolbox": {"feature": {"saveAsImage": {"title": "Download PNG"}}},
                     }, height="300px", key="chart_part_ratio")
 
                 with row1_col2:
                     # 2. Perbandingan OK Ratio Antar Mesin
+                    _cmm_ok_cnt = [int(cmm_ratio_df.loc[c,"OK"]) if c in cmm_ratio_df.index else 0 for c in cmm_x]
+                    _cmm_ng_cnt = [int(cmm_ratio_df.loc[c,"NG"]) if c in cmm_ratio_df.index else 0 for c in cmm_x]
+                    _tt_cmm_ratio = JsCode(
+                        "function(p){"
+                        "var ok_cnt="+_jk1r.dumps(_cmm_ok_cnt)+";var ng_cnt="+_jk1r.dumps(_cmm_ng_cnt)+";"
+                        "var idx=p[0].dataIndex;"
+                        "var ok=ok_cnt[idx],ng=ng_cnt[idx],tot=ok+ng;"
+                        "return '<b>'+p[0].axisValue+'</b><br/>"
+                        "OK: <b style=color:#22C55E;>'+ok+'</b><br/>"
+                        "NG: <b style=color:#EF4444;>'+ng+'</b><br/>"
+                        "OK Ratio: <b>'+p[0].value+'%</b><br/>"
+                        "Total: <b>'+tot+'</b>';}"
+                    )
                     st_echarts({
                         "title": {"text": f"OK Ratio Antar Mesin (CMM)","subtext": PERIODE_TITLE, "textStyle": {"fontSize": 14, "fontWeight": "bold"}},
-                        "tooltip": {"trigger": "axis", "formatter": "{b}: {c}%"},
+                        "tooltip": {"trigger": "axis", "formatter": _tt_cmm_ratio},
                         "xAxis": {"type": "category", "data": cmm_x},
                         "yAxis": {"type": "value", "max": 100},
                         "series": [{"data": cmm_ratio_y, "type": "bar", "itemStyle": {"color": "#10B981", "borderRadius": [4,4,0,0]}, "label": {"show": True, "position": "top", "formatter": "{c}%"}}],
@@ -2538,46 +3118,76 @@ class DescriptivePage:
                 # ── OK Ratio per Shift kondisi 1 — di atas tren ──────────
                 if "Shift" in df.columns:
                     shifts_k1 = sorted(df["Shift"].dropna().unique())
-                    x_sh_k1   = [f"S{s}" for s in shifts_k1]
                     parts_k1  = sorted(df["PartName"].dropna().unique())
-                    models_k1 = sorted(df["ModelName"].dropna().unique())
                     COLORS_K1 = ["#6366F1","#F59E0B","#10B981","#EF4444","#8B5CF6","#06B6D4"]
 
+                    import json as _jdk1
+                    # xAxis = Part, series = per Shift — nama part muncul di bawah tiap grup
+                    _ok_cnt_k1, _ng_cnt_k1 = {}, {}
                     ser_p = []
-                    for i, pn in enumerate(parts_k1):
+                    for i, sh in enumerate(shifts_k1):
                         vals = []
-                        for sh in shifts_k1:
+                        ok_c, ng_c = [], []
+                        for pn in parts_k1:
                             grp = df[(df["PartName"]==pn) & (df["Shift"]==sh)]
-                            tot = len(grp); ok = (grp["Judgement"]=="OK").sum()
+                            tot = len(grp)
+                            ok  = int((grp["Judgement"]=="OK").sum())
+                            ng  = int((grp["Judgement"]=="NG").sum())
                             vals.append(round(ok/tot*100,1) if tot else 0)
-                        ser_p.append({"name": pn, "type": "bar", "data": vals,
+                            ok_c.append(ok); ng_c.append(ng)
+                        _ok_cnt_k1[f"S{sh}"] = ok_c
+                        _ng_cnt_k1[f"S{sh}"]  = ng_c
+                        ser_p.append({"name": f"Shift {sh}", "type": "bar", "data": vals,
                             "itemStyle": {"color": COLORS_K1[i%len(COLORS_K1)],
                                           "borderRadius": [4,4,0,0]},
                             "label": {"show": True, "position": "top",
                                       "formatter": "{c}%", "fontSize": 9}})
+                    _tt_k1 = JsCode(
+                        "function(p){"
+                        "var ok_m="+_jdk1.dumps(_ok_cnt_k1)+";var ng_m="+_jdk1.dumps(_ng_cnt_k1)+";"
+                        "var idx=p[0].dataIndex;"
+                        "var lines='<b>'+p[0].axisValue+'</b><br/>';"
+                        "p.forEach(function(s){"
+                        "var key=s.seriesName.replace('Shift ','S');"
+                        "var ok=ok_m[key]?ok_m[key][idx]:0;"
+                        "var ng=ng_m[key]?ng_m[key][idx]:0;"
+                        "lines+=s.marker+s.seriesName+': <b>'+s.value+'%</b>"
+                        " (OK:'+ok+' NG:'+ng+')<br/>';"
+                        "});return lines;}"
+                    )
                     st_echarts({
                         "title": {"text": "OK Ratio per Shift",
                                   "subtext": PERIODE_TITLE,
                                   "textStyle": {"fontSize": 13, "fontWeight": 700}},
-                        "tooltip": {"trigger": "axis"},
-                        "legend": {"data": parts_k1, "top": 8, "right": 8,
+                        "tooltip": {"trigger": "axis", "formatter": _tt_k1},
+                        "legend": {"data": [f"Shift {s}" for s in shifts_k1], "top": 8, "right": 8,
                                    "icon": "circle", "itemWidth": 8,
                                    "textStyle": {"fontSize": 11}},
                         "grid": {"left": "3%", "right": "4%", "bottom": "3%",
                                  "containLabel": True},
-                        "xAxis": {"type": "category", "data": x_sh_k1,
-                                  "axisLabel": {"fontSize": 12}},
+                        "xAxis": {"type": "category", "data": parts_k1,
+                                  "axisLabel": {"fontSize": 11, "interval": 0, "rotate": 20}},
                         "yAxis": {"type": "value", "min": 0, "max": 100,
                                   "axisLabel": {"formatter": "{value}%"}},
                         "series": ser_p,
                     "toolbox": {"feature": {"saveAsImage": {"title": "Download PNG"}}},
                     }, height="300px", key="deep_shift_k1_part")
 
-                # Grafik Trend OK vs NG
+                # Grafik Trend OK vs NG — K1
+                _tt_trend_k1 = JsCode(
+                    "function(p){"
+                    "var ok_cnt="+str(_ok1)+";var ng_cnt="+str(_ng1)+";"
+                    "var idx=p[0].dataIndex;"
+                    "var ok=ok_cnt[idx]||0,ng=ng_cnt[idx]||0,tot=ok+ng;"
+                    "return '<b>'+p[0].axisValue+'</b><br/>"
+                    "OK: <b style=color:#22C55E;>'+ok+'</b> ('+p[0].value+'%)<br/>"
+                    "NG: <b style=color:#EF4444;>'+ng+'</b> ('+(p[1]?p[1].value:0)+'%)<br/>"
+                    "Total: <b>'+tot+'</b>';}"
+                )
                 st_echarts({
                     "title": {"text": "Tren OK%", "subtext": PERIODE_TITLE + " | " + trend_sub,
                               "textStyle": {"fontSize": 14, "fontWeight": "bold"}},
-                    "tooltip": {"trigger": "axis"},
+                    "tooltip": {"trigger": "axis", "formatter": _tt_trend_k1},
                     "legend": {"data": ["OK%", "NG%"], "right": 100, "top": 12,
                                "icon": "circle", "itemWidth": 8,
                                "textStyle": {"color": "#64748B", "fontSize": 11}},
@@ -2699,9 +3309,23 @@ class DescriptivePage:
                 
                 with row1_col1:
                     # 1. Perbandingan OK Ratio Antar Model
+                    import json as _jk2r
+                    _model_ok_cnt = [int(model_ratio_df.loc[m,"OK"]) if m in model_ratio_df.index else 0 for m in model_x]
+                    _model_ng_cnt = [int(model_ratio_df.loc[m,"NG"]) if m in model_ratio_df.index else 0 for m in model_x]
+                    _tt_model_ratio = JsCode(
+                        "function(p){"
+                        "var ok_cnt="+_jk2r.dumps(_model_ok_cnt)+";var ng_cnt="+_jk2r.dumps(_model_ng_cnt)+";"
+                        "var idx=p[0].dataIndex;"
+                        "var ok=ok_cnt[idx],ng=ng_cnt[idx],tot=ok+ng;"
+                        "return '<b>'+p[0].axisValue+'</b><br/>"
+                        "OK: <b style=color:#22C55E;>'+ok+'</b><br/>"
+                        "NG: <b style=color:#EF4444;>'+ng+'</b><br/>"
+                        "OK Ratio: <b>'+p[0].value+'%</b><br/>"
+                        "Total: <b>'+tot+'</b>';}"
+                    )
                     st_echarts({
                         "title": {"text": f"OK Ratio Antar Model ({f_part})", "subtext": PERIODE_TITLE, "textStyle": {"fontSize": 14, "fontWeight": "bold"}},
-                        "tooltip": {"trigger": "axis", "formatter": "{b}: {c}%"},
+                        "tooltip": {"trigger": "axis", "formatter": _tt_model_ratio},
                         "xAxis": {"type": "category", "data": model_x, "axisLabel": {"interval": 0, "rotate": 30}},
                         "yAxis": {"type": "value", "max": 100},
                         "series": [{"data": model_ratio_y, "type": "bar", "itemStyle": {"color": "#3B82F6", "borderRadius": [4,4,0,0]}, "label": {"show": True, "position": "top", "formatter": "{c}%"}}],
@@ -2710,9 +3334,22 @@ class DescriptivePage:
 
                 with row1_col2:
                     # 2. Perbandingan OK Ratio Antar Mesin
+                    _cmm_ok_cnt_k2 = [int(cmm_ratio_df.loc[c,"OK"]) if c in cmm_ratio_df.index else 0 for c in cmm_x]
+                    _cmm_ng_cnt_k2 = [int(cmm_ratio_df.loc[c,"NG"]) if c in cmm_ratio_df.index else 0 for c in cmm_x]
+                    _tt_cmm_k2 = JsCode(
+                        "function(p){"
+                        "var ok_cnt="+_jk2r.dumps(_cmm_ok_cnt_k2)+";var ng_cnt="+_jk2r.dumps(_cmm_ng_cnt_k2)+";"
+                        "var idx=p[0].dataIndex;"
+                        "var ok=ok_cnt[idx],ng=ng_cnt[idx],tot=ok+ng;"
+                        "return '<b>'+p[0].axisValue+'</b><br/>"
+                        "OK: <b style=color:#22C55E;>'+ok+'</b><br/>"
+                        "NG: <b style=color:#EF4444;>'+ng+'</b><br/>"
+                        "OK Ratio: <b>'+p[0].value+'%</b><br/>"
+                        "Total: <b>'+tot+'</b>';}"
+                    )
                     st_echarts({
                         "title": {"text": "OK Ratio Antar Mesin (CMM)", "subtext": PERIODE_TITLE, "textStyle": {"fontSize": 14, "fontWeight": "bold"}},
-                        "tooltip": {"trigger": "axis", "formatter": "{b}: {c}%"},
+                        "tooltip": {"trigger": "axis", "formatter": _tt_cmm_k2},
                         "xAxis": {"type": "category", "data": cmm_x},
                         "yAxis": {"type": "value", "max": 100},
                         "series": [{"data": cmm_ratio_y, "type": "bar", "itemStyle": {"color": "#10B981", "borderRadius": [4,4,0,0]}, "label": {"show": True, "position": "top", "formatter": "{c}%"}}],
@@ -2748,43 +3385,74 @@ class DescriptivePage:
                 # ── OK Ratio per Shift kondisi 2 — di atas tren ──────────
                 if "Shift" in df.columns:
                     shifts_k2 = sorted(df["Shift"].dropna().unique())
-                    x_sh_k2   = [f"S{s}" for s in shifts_k2]
                     models_k2 = sorted(df[df["PartName"]==f_part]["ModelName"].dropna().unique())
                     COLORS_K2 = ["#6366F1","#F59E0B","#10B981","#EF4444","#8B5CF6","#06B6D4"]
+                    import json as _jdk2
+                    # xAxis = Model, series = per Shift
+                    _ok_cnt_k2, _ng_cnt_k2 = {}, {}
                     ser_k2 = []
-                    for i, mn in enumerate(models_k2):
+                    for i, sh in enumerate(shifts_k2):
                         vals = []
-                        for sh in shifts_k2:
+                        ok_c, ng_c = [], []
+                        for mn in models_k2:
                             grp = df[(df["ModelName"]==mn) & (df["Shift"]==sh)]
-                            tot = len(grp); ok = (grp["Judgement"]=="OK").sum()
+                            tot = len(grp)
+                            ok  = int((grp["Judgement"]=="OK").sum())
+                            ng  = int((grp["Judgement"]=="NG").sum())
                             vals.append(round(ok/tot*100,1) if tot else 0)
-                        ser_k2.append({"name": mn, "type": "bar", "data": vals,
+                            ok_c.append(ok); ng_c.append(ng)
+                        _ok_cnt_k2[f"S{sh}"] = ok_c
+                        _ng_cnt_k2[f"S{sh}"]  = ng_c
+                        ser_k2.append({"name": f"Shift {sh}", "type": "bar", "data": vals,
                             "itemStyle": {"color": COLORS_K2[i%len(COLORS_K2)],
                                           "borderRadius": [4,4,0,0]},
                             "label": {"show": True, "position": "top",
                                       "formatter": "{c}%", "fontSize": 9}})
+                    _tt_k2 = JsCode(
+                        "function(p){"
+                        "var ok_m="+_jdk2.dumps(_ok_cnt_k2)+";var ng_m="+_jdk2.dumps(_ng_cnt_k2)+";"
+                        "var idx=p[0].dataIndex;"
+                        "var lines='<b>'+p[0].axisValue+'</b><br/>';"
+                        "p.forEach(function(s){"
+                        "var key=s.seriesName.replace('Shift ','S');"
+                        "var ok=ok_m[key]?ok_m[key][idx]:0;"
+                        "var ng=ng_m[key]?ng_m[key][idx]:0;"
+                        "lines+=s.marker+s.seriesName+': <b>'+s.value+'%</b>"
+                        " (OK:'+ok+' NG:'+ng+')<br/>';"
+                        "});return lines;}"
+                    )
                     st_echarts({
                         "title": {"text": f"OK Ratio per Shift — {f_part}", "subtext": PERIODE_TITLE,
                                   "textStyle": {"fontSize": 13, "fontWeight": 700}},
-                        "tooltip": {"trigger": "axis"},
-                        "legend": {"data": models_k2, "top": 8, "right": 8,
+                        "tooltip": {"trigger": "axis", "formatter": _tt_k2},
+                        "legend": {"data": [f"Shift {s}" for s in shifts_k2], "top": 8, "right": 8,
                                    "icon": "circle", "itemWidth": 8,
                                    "textStyle": {"fontSize": 11}},
                         "grid": {"left": "3%", "right": "4%", "bottom": "3%",
                                  "containLabel": True},
-                        "xAxis": {"type": "category", "data": x_sh_k2,
-                                  "axisLabel": {"fontSize": 12}},
+                        "xAxis": {"type": "category", "data": list(models_k2),
+                                  "axisLabel": {"fontSize": 11, "interval": 0, "rotate": 20}},
                         "yAxis": {"type": "value", "min": 0, "max": 100,
                                   "axisLabel": {"formatter": "{value}%"}},
                         "series": ser_k2,
                     "toolbox": {"feature": {"saveAsImage": {"title": "Download PNG"}}},
                     }, height="300px", key="deep_shift_k2")
 
-                # Grafik Trend OK vs NG
+                # Grafik Trend OK vs NG — K2
+                _tt_trend_k2 = JsCode(
+                    "function(p){"
+                    "var ok_cnt="+str(_ok2)+";var ng_cnt="+str(_ng2)+";"
+                    "var idx=p[0].dataIndex;"
+                    "var ok=ok_cnt[idx]||0,ng=ng_cnt[idx]||0,tot=ok+ng;"
+                    "return '<b>'+p[0].axisValue+'</b><br/>"
+                    "OK: <b style=color:#22C55E;>'+ok+'</b> ('+p[0].value+'%)<br/>"
+                    "NG: <b style=color:#EF4444;>'+ng+'</b> ('+(p[1]?p[1].value:0)+'%)<br/>"
+                    "Total: <b>'+tot+'</b>';}"
+                )
                 st_echarts({
                     "title": {"text": f"Tren OK% — {f_part}", "subtext": PERIODE_TITLE + " | " + trend_sub2,
                               "textStyle": {"fontSize": 14, "fontWeight": "bold"}},
-                    "tooltip": {"trigger": "axis"},
+                    "tooltip": {"trigger": "axis", "formatter": _tt_trend_k2},
                     "legend": {"data": ["OK%", "NG%"], "right": 100, "top": 12,
                                "icon": "circle", "itemWidth": 8,
                                "textStyle": {"color": "#64748B", "fontSize": 11}},
@@ -2988,42 +3656,73 @@ class DescriptivePage:
                 # ── OK Ratio per Shift kondisi 3 — di atas tren ───────────
                 if "Shift" in df.columns:
                     shifts_k3 = sorted(df["Shift"].dropna().unique())
-                    x_sh_k3   = [f"S{s}" for s in shifts_k3]
                     sno_k3    = sorted(df["SampleNo"].dropna().unique(), key=lambda s: [int(c) if c.isdigit() else c.lower() for c in re.split(r"(\d+)", str(s))])
                     COLORS_K3 = ["#6366F1","#F59E0B","#10B981","#EF4444","#8B5CF6","#06B6D4"]
+                    import json as _jdk3
+                    # xAxis = SampleNo, series = per Shift
+                    _ok_cnt_k3, _ng_cnt_k3 = {}, {}
                     ser_k3 = []
-                    for i, sno in enumerate(sno_k3):
+                    for i, sh in enumerate(shifts_k3):
                         vals = []
-                        for sh in shifts_k3:
+                        ok_c, ng_c = [], []
+                        for sno in sno_k3:
                             grp = df[(df["SampleNo"]==sno) & (df["Shift"]==sh)]
-                            tot = len(grp); ok = (grp["Judgement"]=="OK").sum()
+                            tot = len(grp)
+                            ok  = int((grp["Judgement"]=="OK").sum())
+                            ng  = int((grp["Judgement"]=="NG").sum())
                             vals.append(round(ok/tot*100,1) if tot else 0)
-                        ser_k3.append({"name": str(sno), "type": "bar", "data": vals,
+                            ok_c.append(ok); ng_c.append(ng)
+                        _ok_cnt_k3[f"S{sh}"] = ok_c
+                        _ng_cnt_k3[f"S{sh}"] = ng_c
+                        ser_k3.append({"name": f"Shift {sh}", "type": "bar", "data": vals,
                             "itemStyle": {"color": COLORS_K3[i%len(COLORS_K3)],
                                           "borderRadius": [4,4,0,0]},
                             "label": {"show": True, "position": "top",
                                       "formatter": "{c}%", "fontSize": 9}})
+                    _tt_k3 = JsCode(
+                        "function(p){"
+                        "var ok_m="+_jdk3.dumps(_ok_cnt_k3)+";var ng_m="+_jdk3.dumps(_ng_cnt_k3)+";"
+                        "var idx=p[0].dataIndex;"
+                        "var lines='<b>'+p[0].axisValue+'</b><br/>';"
+                        "p.forEach(function(s){"
+                        "var key=s.seriesName.replace('Shift ','S');"
+                        "var ok=ok_m[key]?ok_m[key][idx]:0;"
+                        "var ng=ng_m[key]?ng_m[key][idx]:0;"
+                        "lines+=s.marker+s.seriesName+': <b>'+s.value+'%</b>"
+                        " (OK:'+ok+' NG:'+ng+')<br/>';"
+                        "});return lines;}"
+                    )
                     st_echarts({
                         "title": {"text": f"OK Ratio per Shift — {f_model}", "subtext": PERIODE_TITLE,
                                   "textStyle": {"fontSize": 13, "fontWeight": 700}},
-                        "tooltip": {"trigger": "axis"},
-                        "legend": {"data": [str(s) for s in sno_k3], "top": 8, "right": 8,
+                        "tooltip": {"trigger": "axis", "formatter": _tt_k3},
+                        "legend": {"data": [f"Shift {s}" for s in shifts_k3], "top": 8, "right": 8,
                                    "icon": "circle", "itemWidth": 8,
                                    "textStyle": {"fontSize": 11}},
                         "grid": {"left": "3%", "right": "4%", "bottom": "3%",
                                  "containLabel": True},
-                        "xAxis": {"type": "category", "data": x_sh_k3,
-                                  "axisLabel": {"fontSize": 12}},
+                        "xAxis": {"type": "category", "data": [f"No.{s}" for s in sno_k3],
+                                  "axisLabel": {"fontSize": 11, "interval": 0}},
                         "yAxis": {"type": "value", "min": 0, "max": 100,
                                   "axisLabel": {"formatter": "{value}%"}},
                         "series": ser_k3,
                     "toolbox": {"feature": {"saveAsImage": {"title": "Download PNG"}}},
                     }, height="300px", key="deep_shift_k3")
 
+                _tt_trend_k3 = JsCode(
+                    "function(p){"
+                    "var ok_cnt="+str(_ok3r)+";var ng_cnt="+str(_ng3r)+";"
+                    "var idx=p[0].dataIndex;"
+                    "var ok=ok_cnt[idx]||0,ng=ng_cnt[idx]||0,tot=ok+ng;"
+                    "return '<b>'+p[0].axisValue+'</b><br/>"
+                    "OK: <b style=color:#22C55E;>'+ok+'</b> ('+p[0].value+'%)<br/>"
+                    "NG: <b style=color:#EF4444;>'+ng+'</b> ('+(p[1]?p[1].value:0)+'%)<br/>"
+                    "Total: <b>'+tot+'</b>';}"
+                )
                 st_echarts({
                     "title": {"text": f"Trend OK% — {f_model}", "subtext": PERIODE_TITLE + " | " + sub3,
                               "textStyle": {"fontSize": 13, "fontWeight": 700}},
-                    "tooltip": {"trigger": "axis"},
+                    "tooltip": {"trigger": "axis", "formatter": _tt_trend_k3},
                     "legend": {"data": ["OK%","NG%"], "right": 8, "top": 8,
                                "icon": "circle", "itemWidth": 8,
                                "textStyle": {"fontSize": 11}},
@@ -3044,34 +3743,6 @@ class DescriptivePage:
                     ],
                 "toolbox": {"feature": {"saveAsImage": {"title": "Download PNG"}}},
                 }, height="300px", key="chart_trend_k3")
-        # ─────────────────────────────────────────────────────────────────
-        #  KONDISI 4: MEMILIH POINT (ANALISIS TINGKAT TITIK/POINT)
-        # ─────────────────────────────────────────────────────────────────
-        if actual_point and event_type == "marked":
-            df_ref = df[df[point_col_name].astype(str).str.strip().str.upper() == actual_point.upper()]
-
-            if not df_ref.empty:
-                st.markdown(
-                    f'<div style="font-size:18px;font-weight:700;color:#0F172A;'
-                    f'margin-bottom:16px;">Analisis Titik: {actual_point}</div>',
-                    unsafe_allow_html=True
-                )
-                detail_points = sorted(df_ref["point"].dropna().astype(str).unique().tolist())
-
-                if detail_points:
-                    selected_detail = st.radio(
-                        f"Pilih parameter untuk point {actual_point}:",
-                        detail_points,
-                        key="detail_point_select",
-                        horizontal=True
-                    )
-                    df_detail = df_ref[df_ref["point"].astype(str) == selected_detail]
-                    self._render_point_detail(
-                        df_detail, actual_point, selected_detail,
-                        key_suffix=f"deep_{actual_point}_{selected_detail}"
-                    )
-
-        # ── Breadcrumb di atas filter (eksplisit, tidak tersembunyi) ──
 # ══════════════════════════════════════════════════════════════════════
 #  [A] 3 METHOD HELPER — masukkan ke dalam class DescriptivePage
 #      letakkan persis sebelum _render_deep_breadcrumb
@@ -3704,6 +4375,37 @@ class DescriptivePage:
                 if all(abs(v-proc_mean)<proc_sigma for v in w):
                     for j in range(i,i+15): vbr[7].add(j)
 
+        # Bangun lookup tooltip per index: nilai aktual, deviasi, judgement, rule
+        import json as _jl5
+        _jl5_judgements = df_trend["Judgement"].tolist()
+        _jl5_deviations = [round(float(v),4) if pd.notna(v) else None
+                           for v in df_trend["Deviation"].tolist()]
+        _rule_map_l5 = {}
+        for r in range(1,8):
+            for idx in vbr[r]:
+                _rule_map_l5.setdefault(idx, []).append(f"Rule {r}")
+        _rule_map_l5_list = {str(k): ", ".join(v) for k,v in _rule_map_l5.items()}
+
+        _tt_l5 = JsCode(
+            "function(params){"
+            "var p=params[0];"
+            "var judgements="+_jl5.dumps(_jl5_judgements)+";"
+            "var devs="+_jl5.dumps(_jl5_deviations)+";"
+            "var rules="+_jl5.dumps(_rule_map_l5_list)+";"
+            "var idx=p.dataIndex;"
+            "var j=judgements[idx]||'—';"
+            "var dev=devs[idx]!==null?devs[idx]:'—';"
+            "var rule=rules[String(idx)]||'';"
+            "var jclr=j==='NG'?'#EF4444':'#22C55E';"
+            "var val=typeof p.data==='object'?p.data.value:p.data;"
+            "var html='<b>'+p.axisValue+'</b><br/>';"
+            "html+='Aktual: <b>'+val+'</b><br/>';"
+            "html+='Deviasi: <b>'+dev+'</b><br/>';"
+            "html+='Status: <b style=color:'+jclr+';>'+j+'</b>';"
+            "if(rule) html+='<br/><span style=color:#F59E0B;font-weight:700;>⚠ '+rule+'</span>';"
+            "return html;}"
+        )
+
         rc = {1:"#EF4444",2:"#F59E0B",3:"#8B5CF6",4:"#06B6D4",5:"#10B981",6:"#F97316",7:"#3B82F6"}
 
         def pt_style(i):
@@ -3738,7 +4440,7 @@ class DescriptivePage:
                                f"  LCL {lcl}  LSL {lsl}"),
                          "font":"10px Arial","fill":"#64748B","textAlign":"right"}}],
             "grid": {"top":50,"right":80,"bottom":55,"left":60},
-            "tooltip": {"trigger":"axis","formatter":"{b}<br/>Aktual: <b>{c}</b>"},
+            "tooltip": {"trigger":"axis","formatter": _tt_l5},
             "xAxis": {"type":"category","data":x_labels,
                       "axisLabel":{"rotate":20,"fontSize":9,"interval":"auto"}},
             "yAxis": {"type":"value",
@@ -3790,20 +4492,35 @@ class DescriptivePage:
             }, height="240px", key=f"sd_pie_{key_suffix}_{sname}")
         with c2:
             shifts = sorted(df_s["Shift"].dropna().astype(str).unique().tolist())
-            _sh_ok_pct, _sh_ng_pct, sh_labels = [], [], []
+            _sh_ok_pct, _sh_ng_pct, _sh_ok_cnt, _sh_ng_cnt, sh_labels = [], [], [], [], []
             for sh in shifts:
                 d = df_s[df_s["Shift"].astype(str) == sh]["Judgement"]
                 if not d.empty:
                     _t = len(d)
+                    _ok = int((d=="OK").sum())
+                    _ng = int((d=="NG").sum())
                     sh_labels.append(f"Shift {sh}")
-                    _sh_ok_pct.append(round((d=="OK").sum()/_t*100,1) if _t else 0)
-                    _sh_ng_pct.append(round((d=="NG").sum()/_t*100,1) if _t else 0)
+                    _sh_ok_pct.append(round(_ok/_t*100,1) if _t else 0)
+                    _sh_ng_pct.append(round(_ng/_t*100,1) if _t else 0)
+                    _sh_ok_cnt.append(_ok)
+                    _sh_ng_cnt.append(_ng)
+            import json as _jl5s
+            _tt_shift = JsCode(
+                "function(p){"
+                "var ok_cnt="+_jl5s.dumps(_sh_ok_cnt)+";var ng_cnt="+_jl5s.dumps(_sh_ng_cnt)+";"
+                "var idx=p[0].dataIndex;"
+                "var ok=ok_cnt[idx],ng=ng_cnt[idx],tot=ok+ng;"
+                "return '<b>'+p[0].name+'</b><br/>"
+                "OK: <b style=color:#22C55E;>'+ok+'</b> ('+p[0].value+'%)<br/>"
+                "NG: <b style=color:#EF4444;>'+ng+'</b> ('+(p[1]?p[1].value:0)+'%)<br/>"
+                "Total: <b>'+tot+'</b>';}"
+            )
             _ech({
                 "title":{"text":"OK% vs NG% per Shift","left":12,"top":8,
                          "textStyle":{"fontSize":12,"fontWeight":700}},
                 "grid":{"top":38,"right":16,"bottom":30,"left":16,"containLabel":True},
                 "tooltip":{"trigger":"axis","axisPointer":{"type":"shadow"},
-                           "formatter":"function(p){return p[0].name+'<br/>OK: <b style=color:#22C55E>'+p[0].value+'%</b><br/>NG: <b style=color:#EF4444>'+p[1].value+'%</b>';}"},
+                           "formatter": _tt_shift},
                 "legend":{"data":["OK%","NG%"],"top":8,"right":16,"itemWidth":10,"itemHeight":10,
                           "textStyle":{"fontSize":10}},
                 "xAxis":{"type":"category","data":sh_labels,"axisLabel":{"fontSize":10}},
@@ -3820,6 +4537,274 @@ class DescriptivePage:
                 ],
             "toolbox": {"feature": {"saveAsImage": {"title": "Download PNG"}}},
             }, height="240px", key=f"sd_shift_{key_suffix}_{sname}")
+
+    def _render_analisa(
+        self,
+        df: "pd.DataFrame",
+        ref: str,
+        param: str,
+        usl: float,
+        lsl: float,
+        nominal: float,
+        uppertol: float,
+        lowertol: float,
+        sel: str,
+        key_suffix: str,
+    ):
+        """
+        Hasilkan ringkasan analisa otomatis dari data titik ukur.
+        Rule-based: Kapabilitas → Tren → Pola SPC → Distribusi NG → Rekomendasi
+        """
+        import numpy as np
+        from local_db import get_root_causes
+
+        if df.empty:
+            return
+
+        df = df.dropna(subset=["Actual"]).copy()
+        if df.empty:
+            return
+
+        y = df["Actual"].tolist()
+        n = len(y)
+
+        # ── 1. Kapabilitas ────────────────────────────────────────
+        mean_v  = float(np.mean(y))
+        sigma_v = float(np.std(y, ddof=1)) if n > 1 else 0.0
+        if sigma_v > 0:
+            cpu  = (usl - mean_v) / (3 * sigma_v)
+            cpl  = (mean_v - lsl) / (3 * sigma_v)
+            cpk  = round(min(cpu, cpl), 2)
+            cp   = round((usl - lsl) / (6 * sigma_v), 2)
+        else:
+            cpk, cp = None, None
+
+        n_ok  = int((df["Judgement"] == "OK").sum())
+        n_ng  = int((df["Judgement"] == "NG").sum())
+        n_tot = n_ok + n_ng
+        ng_rate = round(n_ng / n_tot * 100, 1) if n_tot else 0
+
+        # Shift dominan NG
+        shift_ng = None
+        if "Shift" in df.columns and n_ng > 0:
+            sc = df[df["Judgement"]=="NG"]["Shift"].astype(str).value_counts()
+            if not sc.empty:
+                shift_ng = sc.index[0]
+                shift_ng_pct = round(sc.iloc[0] / n_ng * 100)
+
+        # ── 2. Tren (linear regression) ───────────────────────────
+        slope, intercept = np.polyfit(range(n), y, 1) if n >= 3 else (0.0, mean_v)
+        slope_per_shift = round(slope, 5)
+
+        # Estimasi shift ke batas
+        est_shifts = None
+        est_direction = None
+        if slope > 1e-6:
+            s = (usl - y[-1]) / slope
+            if 0 < s <= 100:
+                est_shifts = int(round(s))
+                est_direction = "USL"
+        elif slope < -1e-6:
+            s = (lsl - y[-1]) / slope
+            if 0 < s <= 100:
+                est_shifts = int(round(s))
+                est_direction = "LSL"
+
+        # Pergeseran mean terbaru (7 data terakhir vs keseluruhan)
+        mean_shift_str = None
+        if n >= 10:
+            mean_recent = float(np.mean(y[-7:]))
+            delta = round(mean_recent - mean_v, 4)
+            if abs(delta) > sigma_v * 0.3:
+                arah = "naik" if delta > 0 else "turun"
+                mean_shift_str = f"Mean 7 data terakhir {arah} {abs(delta):.4f} mm dari rata-rata keseluruhan"
+
+        # ── 3. Pola SPC ───────────────────────────────────────────
+        RULE_DESC = {
+            1: "titik di luar batas kendali (outlier)",
+            2: "8 titik berurutan di satu sisi rata-rata (pergeseran proses)",
+            3: "7 titik naik/turun berurutan (drift)",
+            4: "14 titik bergantian naik-turun (osilasi)",
+            5: "2 dari 3 titik di zona A (pergeseran awal)",
+            6: "4 dari 5 titik di zona B (drift halus)",
+            7: "15 titik dalam zona C (proses terlalu konsisten/stratifikasi)",
+        }
+        vbr = {r: set() for r in range(1, 8)}
+        if sigma_v > 0 and n >= 2:
+            for i, v in enumerate(y):
+                if abs(v - mean_v) > 3 * sigma_v: vbr[1].add(i)
+            for i in range(n - 7):
+                w = y[i:i+8]
+                if all(v > mean_v for v in w) or all(v < mean_v for v in w):
+                    for j in range(i, i+8): vbr[2].add(j)
+            for i in range(n - 6):
+                w = y[i:i+7]
+                if all(w[j] < w[j+1] for j in range(6)) or all(w[j] > w[j+1] for j in range(6)):
+                    for j in range(i, i+7): vbr[3].add(j)
+            for i in range(n - 13):
+                w = y[i:i+14]
+                if all((w[j] < w[j+1]) != (w[j+1] < w[j+2]) for j in range(12)):
+                    for j in range(i, i+14): vbr[4].add(j)
+            for i in range(n - 2):
+                w = y[i:i+3]
+                if (sum(1 for v in w if v > mean_v + 2*sigma_v) >= 2 or
+                        sum(1 for v in w if v < mean_v - 2*sigma_v) >= 2):
+                    for j in range(i, i+3): vbr[5].add(j)
+            for i in range(n - 4):
+                w = y[i:i+5]
+                if (sum(1 for v in w if v > mean_v + sigma_v) >= 4 or
+                        sum(1 for v in w if v < mean_v - sigma_v) >= 4):
+                    for j in range(i, i+5): vbr[6].add(j)
+            for i in range(n - 14):
+                w = y[i:i+15]
+                if all(abs(v - mean_v) < sigma_v for v in w):
+                    for j in range(i, i+15): vbr[7].add(j)
+        triggered_rules = [r for r in range(1, 8) if vbr[r]]
+
+        # ── 4. Root Cause historis ────────────────────────────────
+        REKOM = {
+            "Mesin / Machine":  "Cek kalibrasi probe dan kondisi mesin sebelum shift berikutnya",
+            "Setup / Fixture":  "Verifikasi posisi fixture dan datum reference",
+            "Material":         "Lakukan incoming inspection — pisahkan material suspect",
+            "Operator":         "Brief operator terkait SOP setup titik ini",
+            "Program CMM":      "Update program CMM sesuai revisi drawing terbaru",
+            "Tooling":          "Cek tool wear dan ganti insert jika perlu",
+            "Lainnya":          "Investigasi lebih lanjut bersama engineer",
+        }
+        PARAM_REKOM = {
+            "posisi": "Cek fixture dan datum reference",
+            "position": "Cek fixture dan datum reference",
+            "distance": "Verifikasi tool wear dan probe approach",
+            "diameter": "Cek tool wear dan kondisi tooling",
+            "flatness": "Cek surface condition dan material",
+        }
+
+        top_rc_cat  = None
+        top_rc_pct  = None
+        all_rcs = get_root_causes()
+        if all_rcs:
+            import pandas as _pd_rc
+            df_rc = _pd_rc.DataFrame(all_rcs)
+            # Filter ke part+model+ref+param ini
+            part_val  = df["PartName"].iloc[0]  if "PartName"  in df.columns else ""
+            model_val = df["ModelName"].iloc[0] if "ModelName" in df.columns else ""
+            mask = (
+                (df_rc["part"]      == str(part_val)) &
+                (df_rc["model"]     == str(model_val)) &
+                (df_rc["ref"]       == str(ref)) &
+                (df_rc["parameter"] == str(param))
+            )
+            df_rc_titik = df_rc[mask]
+            if not df_rc_titik.empty:
+                vc = df_rc_titik["category"].value_counts()
+                top_rc_cat = vc.index[0]
+                top_rc_pct = round(vc.iloc[0] / len(df_rc_titik) * 100)
+
+        rekom_str = (
+            REKOM.get(top_rc_cat, "Investigasi lebih lanjut bersama engineer")
+            if top_rc_cat else
+            next((v for k, v in PARAM_REKOM.items() if k in param.lower()),
+                 "Investigasi penyebab bersama engineer")
+        )
+
+        # ── Render card ───────────────────────────────────────────
+        sample_label = f"Sample {sel}" if sel != "Semua" else "Semua Sample"
+
+        # Warna header berdasarkan kondisi terburuk
+        if cpk is not None and cpk < 1.0 or ng_rate > 15:
+            hdr_bg, hdr_clr, hdr_icon = "#FEF2F2", "#991B1B", "🔴"
+        elif cpk is not None and cpk < 1.33 or ng_rate > 5:
+            hdr_bg, hdr_clr, hdr_icon = "#FFFBEB", "#92400E", "🟡"
+        else:
+            hdr_bg, hdr_clr, hdr_icon = "#F0FDF4", "#14532D", "🟢"
+
+        # ── Susun poin-poin insight ───────────────────────────────
+        poin = []
+
+        # Kapabilitas
+        if cpk is not None:
+            if cpk >= 1.67:
+                cap_str = f"Proses <b>sangat kapabel</b> (Cpk {cpk})"
+            elif cpk >= 1.33:
+                cap_str = f"Proses <b>kapabel</b> (Cpk {cpk})"
+            elif cpk >= 1.0:
+                cap_str = f"Proses <b>mendekati batas</b>, perlu dipantau (Cpk {cpk})"
+            else:
+                cap_str = f"Proses <b>tidak kapabel</b>, tindakan segera diperlukan (Cpk {cpk})"
+            mean_delta = round(mean_v - nominal, 4)
+            arah_mean  = "di atas" if mean_delta > 0 else "di bawah"
+            sign       = "+" if mean_delta >= 0 else ""
+            cap_str   += f". Mean aktual <b>{round(mean_v,4)}</b> ({sign}{mean_delta} mm {arah_mean} nominal)"
+            poin.append(("📊 Kapabilitas", cap_str))
+        else:
+            poin.append(("📊 Kapabilitas", "Data tidak cukup untuk menghitung Cpk."))
+
+        # NG Rate
+        ng_str = f"<b>{n_ng} NG dari {n_tot} pengukuran ({ng_rate}%)</b>"
+        if shift_ng:
+            ng_str += f", dominan di <b>Shift {shift_ng}</b> ({shift_ng_pct}%)"
+        if n_ng == 0:
+            ng_str = f"<b>Tidak ada NG</b> — semua {n_tot} pengukuran OK ✓"
+        poin.append(("🔢 Hasil Pengukuran", ng_str))
+
+        # Tren
+        if abs(slope) < 1e-6:
+            tren_str = "Proses <b>stabil</b>, tidak ada drift signifikan"
+        elif slope > 0:
+            tren_str = (f"Nilai cenderung <b>naik</b> ({slope_per_shift:+.5f} mm/shift)"
+                        + (f", diprediksi menyentuh <b>USL dalam ±{est_shifts} shift</b> "
+                           f"(berdasarkan tren linear)" if est_shifts else ""))
+        else:
+            tren_str = (f"Nilai cenderung <b>turun</b> ({slope_per_shift:+.5f} mm/shift)"
+                        + (f", diprediksi menyentuh <b>LSL dalam ±{est_shifts} shift</b> "
+                           f"(berdasarkan tren linear)" if est_shifts else ""))
+        if mean_shift_str:
+            tren_str += f". {mean_shift_str}."
+        poin.append(("📈 Tren", tren_str))
+
+        # Pola SPC
+        if triggered_rules:
+            rule_parts = [f"<b>Rule {r}</b> — {RULE_DESC[r]}" for r in triggered_rules]
+            spc_str = "; ".join(rule_parts)
+        else:
+            spc_str = "Tidak ada pola SPC yang terpicu — proses dalam kendali statistik ✓"
+        poin.append(("⚡ Pola SPC", spc_str))
+
+        # Rekomendasi
+        if top_rc_cat:
+            rek_str = (f"Berdasarkan <b>{len(df_rc_titik)} histori root cause</b>, "
+                       f"penyebab dominan adalah <b>{top_rc_cat} ({top_rc_pct}%)</b>. "
+                       f"→ {rekom_str}")
+        else:
+            rek_str = f"Belum ada root cause tercatat. → {rekom_str}"
+        poin.append(("💡 Rekomendasi", rek_str))
+
+        # ── Render HTML ───────────────────────────────────────────
+        st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+        rows_html = "".join([
+            f'<div style="display:flex;gap:12px;align-items:flex-start;'
+            f'padding:10px 0;border-bottom:1px solid #F1F5F9;">'
+            f'<div style="font-size:11px;font-weight:700;color:#64748B;'
+            f'white-space:nowrap;min-width:130px;padding-top:1px;">{label}</div>'
+            f'<div style="font-size:12px;color:#334155;line-height:1.6;">{text}</div>'
+            f'</div>'
+            for label, text in poin
+        ])
+        st.markdown(
+            f'<div style="background:white;border:1px solid #E2E8F0;'
+            f'border-radius:12px;overflow:hidden;margin-top:4px;">'
+            f'<div style="background:{hdr_bg};padding:12px 20px;'
+            f'display:flex;align-items:center;gap:8px;">'
+            f'<span style="font-size:16px;">{hdr_icon}</span>'
+            f'<span style="font-size:14px;font-weight:700;color:{hdr_clr};">'
+            f'Hasil Analisa & Kesimpulan</span>'
+            f'<span style="font-size:11px;color:{hdr_clr};margin-left:4px;'
+            f'font-weight:500;opacity:0.8;">— {ref} · {param} · {sample_label}</span>'
+            f'</div>'
+            f'<div style="padding:4px 20px 12px;">{rows_html}</div>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
 
     def _render_point_detail(
         self,
@@ -3892,22 +4877,18 @@ class DescriptivePage:
 
         if sel == "Semua":
             self._render_sample_overview(df_detail, ref, param, usl, lsl, nominal, key_suffix)
+            self._render_analisa(
+                df=df_detail, ref=ref, param=param,
+                usl=usl, lsl=lsl, nominal=nominal,
+                uppertol=uppertol, lowertol=lowertol,
+                sel="Semua", key_suffix=key_suffix,
+            )
         else:
             df_s = df_detail[df_detail["SampleNo"].astype(str) == sel].copy()
             self._render_single_detail(df_s, ref, param, usl, lsl, nominal, sel, key_suffix)
-
-        # ── Placeholder: Hasil Analisa & Kesimpulan ───────────────
-        st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
-        st.markdown(
-            '<div style="background:white;border:1.5px dashed #CBD5E1;border-radius:12px;'
-            'padding:20px 24px;margin-top:4px;">'
-            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
-            '<span style="font-size:16px;">📝</span>'
-            '<span style="font-size:14px;font-weight:700;color:#0F172A;">Hasil Analisa & Kesimpulan</span>'
-            '</div>'
-            '<div style="font-size:12px;color:#94A3B8;font-style:italic;">'
-            '— Placeholder: ringkasan analisa tren, identifikasi pola, dan rekomendasi tindak lanjut —'
-            '</div>'
-            '</div>',
-            unsafe_allow_html=True
-        )
+            self._render_analisa(
+                df=df_s, ref=ref, param=param,
+                usl=usl, lsl=lsl, nominal=nominal,
+                uppertol=uppertol, lowertol=lowertol,
+                sel=sel, key_suffix=key_suffix,
+            )
