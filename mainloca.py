@@ -3,7 +3,16 @@ from streamlit_autorefresh import st_autorefresh
 from streamlit_option_menu import option_menu
 import pandas as pd
 import os
+import base64
 from datetime import datetime, timedelta
+from pathlib import Path as _PPath
+
+# ── Logo AHM sebagai base64 (dipakai di login, sidebar, report) ──
+def _ahm_logo_b64() -> str:
+    p = _PPath("assets/Logo_AHM.svg")
+    if p.exists():
+        return "data:image/svg+xml;base64," + base64.b64encode(p.read_bytes()).decode()
+    return ""
 
 # Import class halaman dari folder pages_app
 from pages_app.dashboard import DashboardPage
@@ -64,7 +73,7 @@ def load_data(csv_path: str) -> pd.DataFrame:
         if df.empty:
             st.sidebar.info("File CSV kosong.")
             return df
-        df["Date"]      = pd.to_datetime(df["Date"], utc=True).dt.tz_convert('Asia/Jakarta')
+        df["Date"] = pd.to_datetime(df["Date"])
         df["Nominal"]   = pd.to_numeric(df["Nominal"],   errors="coerce")
         df["Uppertol"]  = pd.to_numeric(df["Uppertol"],  errors="coerce")
         df["Lowertol"]  = pd.to_numeric(df["Lowertol"],  errors="coerce")
@@ -137,6 +146,21 @@ class QualityDashboardApp:
         .login-title { font-size: 20px; font-weight: 800; color: #0F172A; margin-bottom: 4px; }
         .login-sub   { font-size: 12px; font-weight: 500; color: #64748B; }
 
+        /* ── Date Input — putih bersih ── */
+        div[data-testid="stDateInput"] > div {
+            background: #FFFFFF !important;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 8px !important;
+        }
+        div[data-testid="stDateInput"] > div:focus-within {
+            border-color: #94A3B8 !important;
+            box-shadow: 0 0 0 2px rgba(148,163,184,0.15) !important;
+        }
+        div[data-testid="stDateInput"] input {
+            background: #FFFFFF !important;
+            color: #0F172A !important;
+        }
+
         </style>
         """, unsafe_allow_html=True)
 
@@ -180,15 +204,13 @@ class QualityDashboardApp:
         # Center the login card using columns
         col1, col2, col3 = st.columns([1, 1.2, 1])
         with col2:
-            st.markdown("""
+            _logo_url = _ahm_logo_b64()
+            st.markdown(f"""
             <div style="margin-top: 80px;">
               <div style="display:flex; align-items:center; gap:12px; margin-bottom:28px;">
-                <div style="background:#DC2626; border-radius:10px; width:42px; height:42px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                  <span style="color:#fff; font-weight:900; font-size:11px; letter-spacing:-0.3px;">AHM</span>
-                </div>
+                {"<img src='"+_logo_url+"' style='height:42px;width:auto;object-fit:contain;flex-shrink:0;' />" if _logo_url else "<div style='background:#DC2626;border-radius:10px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;'><span style='color:#fff;font-weight:900;font-size:11px;'>AHM</span></div>"}
                 <div>
                   <div style="font-size:18px; font-weight:800; color:#0F172A; line-height:1.2;">CMM Quality Dashboard</div>
-                  <div style="font-size:11.5px; font-weight:500; color:#64748B;">PT Astra Honda Motor</div>
                 </div>
               </div>
             </div>
@@ -242,16 +264,14 @@ class QualityDashboardApp:
         initials = username[:2].upper()
 
         with st.sidebar:
-            # Header AHM
-            st.markdown("""
+            # Header AHM — Logo SVG
+            _logo_url_sb = _ahm_logo_b64()
+            _logo_html = (f"<img src='{_logo_url_sb}' style='height:34px;width:auto;object-fit:contain;flex-shrink:0;' />"
+                          if _logo_url_sb else
+                          "<div style='background:#DC2626;border-radius:8px;width:34px;height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;'><span style='color:#fff;font-weight:900;font-size:10px;'>AHM</span></div>")
+            st.markdown(f"""
             <div style="padding:16px 20px 14px; display:flex; align-items:center; gap:12px;">
-              <div style="background:#DC2626; border-radius:8px; width:34px; height:34px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
-                <span style="color:#fff; font-weight:900; font-size:10px; letter-spacing:-0.3px; line-height:1;">AHM</span>
-              </div>
-              <div style="line-height:1.2;">
-                <div style="font-size:13.5px; font-weight:800; color:#0F172A;">PT Astra Honda</div>
-                <div style="font-size:10.5px; font-weight:600; color:#64748B;">Motor</div>
-              </div>
+              {_logo_html}
             </div>
             <div style="height:1px; background:#E8ECF2; margin:0;"></div>
             <div style="height:8px;"></div>
@@ -332,6 +352,22 @@ class QualityDashboardApp:
 
         nama_file_csv = "REAL7D.csv"
         df_all = load_data(nama_file_csv)
+
+        # ── Warmup XGBoost inference setelah login ────────────────
+        # Jalan sekali, hasilnya di-cache 30 menit.
+        # Dashboard dan Predictive langsung pakai cache — tidak loading lagi.
+        if not df_all.empty:
+            from utils.xgb_inference import run_xgb_inference, get_xgb_cache_key, run_rule_prediction, RULE_CACHE_KEY, RULE_TTL
+            import time as _wt
+            # Warmup XGBoost
+            _ck, _, _, _ = get_xgb_cache_key()
+            _ts_k = f"{_ck}_ts"
+            if _ck not in st.session_state or _wt.time() - st.session_state.get(_ts_k, 0) > 1800:
+                run_xgb_inference(df_all)
+            # Warmup Rule prediction
+            _rts_k = f"{RULE_CACHE_KEY}_ts"
+            if RULE_CACHE_KEY not in st.session_state or _wt.time() - st.session_state.get(_rts_k, 0) > RULE_TTL:
+                run_rule_prediction(df_all)
 
         username = st.session_state.get("username", "")
 
