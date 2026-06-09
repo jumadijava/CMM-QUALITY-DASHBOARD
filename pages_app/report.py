@@ -235,149 +235,149 @@ HDR_CONFIG: dict[str, dict] = {
     'CRCS L_K1AL L1': dict(
         unitProduksi = 'MACHINING CRANK CASE',
         namaPart     = 'CRANK CASE COMP LEFT',
-        noPart       = '11200-K1AL-L1-B000',
-        line         = 'L1',
+        noPart       = '11201-K1AL-N800-MA',
+        line         = '1',
         noDoc        = '',
         tglBerlaku   = '',
     ),
     'CRCS R_K1AL L1': dict(
         unitProduksi = 'MACHINING CRANK CASE',
         namaPart     = 'CRANK CASE COMP RIGHT',
-        noPart       = '11201-K1AL-L1-B000',
-        line         = 'L1',
+        noPart       = '11101-K1AL-N800-MA',
+        line         = '1',
         noDoc        = '',
         tglBerlaku   = '',
     ),
     'CRCS L_K1AL L2': dict(
         unitProduksi = 'MACHINING CRANK CASE',
         namaPart     = 'CRANK CASE COMP LEFT',
-        noPart       = '11200-K1AL-L2-B000',
-        line         = 'L2',
+        noPart       = '11201-K1AL-N800-MA',
+        line         = '2',
         noDoc        = '',
         tglBerlaku   = '',
     ),
     'CRCS R_K1AL L2': dict(
         unitProduksi = 'MACHINING CRANK CASE',
         namaPart     = 'CRANK CASE COMP RIGHT',
-        noPart       = '11201-K1AL-L2-B000',
-        line         = 'L2',
+        noPart       = '11101-K1AL-N800-MA',
+        line         = '2',
         noDoc        = '',
         tglBerlaku   = '',
     ),
     'CRCS L_K1AL L3': dict(
         unitProduksi = 'MACHINING CRANK CASE',
         namaPart     = 'CRANK CASE COMP LEFT',
-        noPart       = '11200-K1AL-L3-B000',
-        line         = 'L3',
+        noPart       = '11201-K1AL-N800-MA',
+        line         = '3',
         noDoc        = '',
         tglBerlaku   = '',
     ),
     'CRCS R_K1AL L3': dict(
         unitProduksi = 'MACHINING CRANK CASE',
         namaPart     = 'CRANK CASE COMP RIGHT',
-        noPart       = '11201-K1AL-L3-B000',
-        line         = 'L3',
+        noPart       = '11101-K1AL-N800-MA',
+        line         = '3',
         noDoc        = '',
         tglBerlaku   = '',
     ),
     'CRCS L_K2SA': dict(
         unitProduksi = 'MACHINING CRANK CASE',
         namaPart     = 'CRANK CASE COMP LEFT',
-        noPart       = '11200-K2SA-B000',
-        line         = '',
-        noDoc        = '',
-        tglBerlaku   = '',
+        noPart       = '11200-K1N -N000',
+        line         = '5 & 6',
+        noDoc        = '64CK-0K2S-105-B00',
+        tglBerlaku   = '01-Nov-21',
     ),
     'CRCS R_K2SA': dict(
         unitProduksi = 'MACHINING CRANK CASE',
         namaPart     = 'CRANK CASE COMP RIGHT',
-        noPart       = '11201-K2SA-B000',
-        line         = '',
-        noDoc        = '',
-        tglBerlaku   = '',
+        noPart       = '11100-K1N-N000',
+        line         = '5 & 6',
+        noDoc        = '64CK-0K2S-105-B00',
+        tglBerlaku   = '01-Nov-21',
     ),
     'CRCS L_K60': dict(
         unitProduksi = 'MACHINING CRANK CASE',
         namaPart     = 'CRANK CASE COMP LEFT',
         noPart       = '11200-K60-B000',
-        line         = 'N1 ~ N5',
+        line         = '4',
         noDoc        = '64CK-OK6R-402-B01',
         tglBerlaku   = '01-Nov-17',
     ),
     'CRCS R_K60': dict(
         unitProduksi = 'MACHINING CRANK CASE',
         namaPart     = 'CRANK CASE COMP RIGHT',
-        noPart       = '11201-K60-B000',
-        line         = 'N1 ~ N5',
-        noDoc        = '',
-        tglBerlaku   = '',
+        noPart       = '11100-K59-A1OO',
+        line         = '4',
+        noDoc        = '64CK-OK6R-507-B01',
+        tglBerlaku   = '01-Nov-17',
     ),
     'MISSION CASE_K60': dict(
         unitProduksi = 'MACHINING CRANK CASE',
-        namaPart     = 'MISSION CASE',
-        noPart       = '11300-K60-B000',
-        line         = '',
-        noDoc        = '',
-        tglBerlaku   = '',
+        namaPart     = 'CASE COMP MISSION',
+        noPart       = '21200-KZR-6000',
+        line         = '4',
+        noDoc        = '71CK-OK6R-602-B01',
+        tglBerlaku   = '01-Nov-17',
     ),
     # ── CYL COMP ──────────────────────────────────────────────────────────────
     'CYL COMP_K1AL': dict(
-        unitProduksi = 'MACHINING CYLINDER',
-        namaPart     = 'CYLINDER COMP',
-        noPart       = '',
-        line         = '',
-        noDoc        = '',
-        tglBerlaku   = '',
+        unitProduksi = 'MACHINING CYLINDER COMP',
+        namaPart     = 'CYLINDER COMP (K1AL)',
+        noPart       = '12100-K1A -N800',
+        line         = '1 & 2',
+        noDoc        = '60MK-0K1A-100-B00',
+        tglBerlaku   = '18-Mar-24',
     ),
     'CYL COMP_K2V': dict(
-        unitProduksi = 'MACHINING CYLINDER',
-        namaPart     = 'CYLINDER COMP',
-        noPart       = '',
-        line         = '',
+        unitProduksi = 'MACHINING CYLINDER COMP K2VG',
+        namaPart     = 'CYLINDER COMP (MA)',
+        noPart       = '1210A-KZR -6006-IN',
+        line         = '3',
         noDoc        = '',
         tglBerlaku   = '',
     ),
     'CYL COMP_K2SA': dict(
-        unitProduksi = 'MACHINING CYLINDER',
-        namaPart     = 'CYLINDER COMP',
-        noPart       = '',
-        line         = '',
-        noDoc        = '',
-        tglBerlaku   = '',
+        unitProduksi = 'MACHINING CYLINDER COMP K2SA',
+        namaPart     = 'CYLINDER COMP (MA)',
+        noPart       = '1210A-K1Z -N000-IN',
+        line         = '3',
+        noDoc        = '60MK - 0K2S - 200 - B00',
+        tglBerlaku   = '21-Aug-24',
     ),
     # ── HOLDER WATER PUMP ────────────────────────────────────────────────────
     'HOLDER WATER PUMP_K60': dict(
-        unitProduksi = 'MACHINING',
-        namaPart     = 'HOLDER WATER PUMP',
-        noPart       = '',
-        line         = '',
-        noDoc        = '',
-        tglBerlaku   = '',
+        unitProduksi = 'MACHINING CYLINDER HEAD',
+        namaPart     = 'HOLDER COMP WATER PUMP',
+        noPart       = '12211 - KWN - 9000',
+        line         = '1',
+        noDoc        = '62HK-0K6R-101-B01',
+        tglBerlaku   = 'Dec-15',
     ),
     # ── CYL HEAD — K60 ───────────────────────────────────────────────────────
     'CYL HEAD GV_K60': dict(
         unitProduksi = 'MACHINING CYLINDER HEAD',
-        namaPart     = 'CYLINDER HEAD GV',
-        noPart       = '',
-        line         = '',
-        noDoc        = '',
-        tglBerlaku   = '',
+        namaPart     = 'HEAD ASSY, CYLINDER',
+        noPart       = '1220B-K1A -N601-DL',
+        line         = '2',
+        noDoc        = '62HK-0KJA-104-B01',
+        tglBerlaku   = 'Dec-23',
     ),
     'CYL HEAD CAM_K60': dict(
         unitProduksi = 'MACHINING CYLINDER HEAD',
-        namaPart     = 'CYLINDER HEAD CAM',
-        noPart       = '',
-        line         = '',
-        noDoc        = '',
-        tglBerlaku   = '',
+        namaPart     = 'HEAD COMP,CYLINDER',
+        noPart       = '1220C-K60R-B605-IN',
+        line         = '2',
+        noDoc        = '62HK-0K6R-101-B01',
+        tglBerlaku   = 'Dec-15',
     ),
     'CYL HEAD NT_K60': dict(
         unitProduksi = 'MACHINING CYLINDER HEAD',
-        namaPart     = 'CYLINDER HEAD NT',
-        noPart       = '',
-        line         = '',
-        noDoc        = '',
-        tglBerlaku   = '',
+        namaPart     = 'HEAD COMP,CYLINDER',
+        noPart       = '1220C-K60R-B605-IN',
+        line         = '2',
+        noDoc        = '62HK-0K6R-101-B01',
+        tglBerlaku   = 'Dec-15',
     ),
     'CYL HEAD ROUGH_K60': dict(
         unitProduksi = 'MACHINING CYLINDER HEAD',
@@ -389,87 +389,145 @@ HDR_CONFIG: dict[str, dict] = {
     ),
     # ── CYL HEAD — K2SA ──────────────────────────────────────────────────────
     'CYL HEAD GV_K2SA': dict(
-        unitProduksi = 'MACHINING CYLINDER HEAD',
-        namaPart     = 'CYLINDER HEAD GV',
-        noPart       = '',
-        line         = '',
+        unitProduksi = 'CYLINDER HEAD',
+        namaPart     = 'HEAD COMP. CYLINDER',
+        noPart       = '12200-K2SA-N004',
+        line         = '1',
         noDoc        = '',
         tglBerlaku   = '',
     ),
     'CYL HEAD CAM_K2SA': dict(
-        unitProduksi = 'MACHINING CYLINDER HEAD',
-        namaPart     = 'CYLINDER HEAD CAM',
-        noPart       = '',
-        line         = '',
+        unitProduksi = 'CYLINDER HEAD',
+        namaPart     = 'HEAD COMP. CYLINDER',
+        noPart       = '12200-K2SA-N004',
+        line         = '1',
         noDoc        = '',
         tglBerlaku   = '',
     ),
     'CYL HEAD NT_K2SA': dict(
-        unitProduksi = 'MACHINING CYLINDER HEAD',
-        namaPart     = 'CYLINDER HEAD NT',
-        noPart       = '',
-        line         = '',
-        noDoc        = '',
-        tglBerlaku   = '',
+        unitProduksi = 'CYLINDER HEAD',
+        namaPart     = 'HEAD COMP. CYLINDER',
+        noPart       = '1220B-K2S -N001-DL',
+        line         = '1',
+        noDoc        = '62HK-0K2S-104-B02',
+        tglBerlaku   = 'Mar-23',
     ),
     'CYL HEAD ROUGH_K2SA': dict(
-        unitProduksi = 'MACHINING CYLINDER HEAD',
-        namaPart     = 'CYLINDER HEAD ROUGH',
-        noPart       = '',
-        line         = '',
-        noDoc        = '',
-        tglBerlaku   = '',
+        unitProduksi = 'CYLINDER HEAD',
+        namaPart     = 'HEAD COMP. CYLINDER',
+        noPart       = '1220B-K2S -N000-DL',
+        line         = '1',
+        noDoc        = '62HK-0K2S-104-B02',
+        tglBerlaku   = 'Jan-22',
     ),
     # ── CYL HEAD — K1AL ──────────────────────────────────────────────────────
     'CYL HEAD GV_K1AL': dict(
         unitProduksi = 'MACHINING CYLINDER HEAD',
-        namaPart     = 'CYLINDER HEAD GV',
-        noPart       = '',
-        line         = '',
-        noDoc        = '',
-        tglBerlaku   = '',
+        namaPart     = 'HEAD ASSY, CYLINDER',
+        noPart       = '1220B-K1A -N601-DL',
+        line         = '2 & 3',
+        noDoc        = '62HK-0KJA-104-B01',
+        tglBerlaku   = 'Dec-23',
+    ),
+    'CYL HEAD GV_K1AL L2': dict(
+        unitProduksi = 'MACHINING CYLINDER HEAD',
+        namaPart     = 'HEAD ASSY, CYLINDER',
+        noPart       = '1220B-K1A -N601-DL',
+        line         = '2',
+        noDoc        = '62HK-0KJA-104-B01',
+        tglBerlaku   = 'Dec-23',
+    ),
+    'CYL HEAD GV_K1AL L3': dict(
+        unitProduksi = 'MACHINING CYLINDER HEAD',
+        namaPart     = 'HEAD ASSY, CYLINDER',
+        noPart       = '1220B-K1A -N601-DL',
+        line         = '3',
+        noDoc        = '62HK-0KJA-104-B01',
+        tglBerlaku   = 'Dec-23',
     ),
     'CYL HEAD CAM_K1AL L2': dict(
         unitProduksi = 'MACHINING CYLINDER HEAD',
-        namaPart     = 'CYLINDER HEAD CAM',
-        noPart       = '',
-        line         = 'L2',
-        noDoc        = '',
-        tglBerlaku   = '',
+        namaPart     = 'HEAD ASSY, CYLINDER',
+        noPart       = '1220B-K1A -N601-DL',
+        line         = '2',
+        noDoc        = '62HK-0KJA-104-B01',
+        tglBerlaku   = 'Dec-23',
     ),
     'CYL HEAD NT_K1AL L2': dict(
         unitProduksi = 'MACHINING CYLINDER HEAD',
-        namaPart     = 'CYLINDER HEAD NT',
-        noPart       = '',
-        line         = 'L2',
-        noDoc        = '',
-        tglBerlaku   = '',
+        namaPart     = 'HEAD ASSY, CYLINDER',
+        noPart       = '1220B-K1A -N601-DL',
+        line         = '2',
+        noDoc        = '62HK-0KJA-104-B01',
+        tglBerlaku   = 'Dec-23',
     ),
     'CYL HEAD CAM_K1AL L3': dict(
         unitProduksi = 'MACHINING CYLINDER HEAD',
-        namaPart     = 'CYLINDER HEAD CAM',
-        noPart       = '',
-        line         = 'L3',
-        noDoc        = '',
-        tglBerlaku   = '',
+        namaPart     = 'HEAD ASSY, CYLINDER',
+        noPart       = '1220B-K1A -N601-DL',
+        line         = '3',
+        noDoc        = '62HK-0KJA-104-B01',
+        tglBerlaku   = 'Dec-23',
     ),
     'CYL HEAD NT_K1AL L3': dict(
         unitProduksi = 'MACHINING CYLINDER HEAD',
-        namaPart     = 'CYLINDER HEAD NT',
-        noPart       = '',
-        line         = 'L3',
-        noDoc        = '',
-        tglBerlaku   = '',
+        namaPart     = 'HEAD ASSY, CYLINDER',
+        noPart       = '1220B-K1A -N601-DL',
+        line         = '3',
+        noDoc        = '62HK-0KJA-104-B01',
+        tglBerlaku   = 'Dec-23',
     ),
     'CYL HEAD ROUGH_K1AL': dict(
         unitProduksi = 'MACHINING CYLINDER HEAD',
-        namaPart     = 'CYLINDER HEAD ROUGH',
-        noPart       = '',
-        line         = '',
-        noDoc        = '',
-        tglBerlaku   = '',
+        namaPart     = 'HEAD ASSY, CYLINDER ( K0JF )',
+        noPart       = '12200B-K0J -N002 - IN',
+        line         = '2 & 3',
+        noDoc        = '62HK-0KJA-104-B01',
+        tglBerlaku   = 'Sep-19',
+    ),
+    'CYL HEAD ROUGH_K1AL L2': dict(
+        unitProduksi = 'MACHINING CYLINDER HEAD',
+        namaPart     = 'HEAD ASSY, CYLINDER ( K0JF )',
+        noPart       = '12200B-K0J -N002 - IN',
+        line         = '2',
+        noDoc        = '62HK-0KJA-104-B01',
+        tglBerlaku   = 'Sep-19',
+    ),
+    'CYL HEAD ROUGH_K1AL L3': dict(
+        unitProduksi = 'MACHINING CYLINDER HEAD',
+        namaPart     = 'HEAD ASSY, CYLINDER ( K0JF )',
+        noPart       = '12200B-K0J -N002 - IN',
+        line         = '3',
+        noDoc        = '62HK-0KJA-104-B01',
+        tglBerlaku   = 'Sep-19',
+    ),
+    # ── CYL COMP K1AL per line ──────────────────────────────────────────────
+    'CYL COMP_K1AL L1': dict(
+        unitProduksi = 'MACHINING CYLINDER COMP',
+        namaPart     = 'CYLINDER COMP (K1AL)',
+        noPart       = '12100-K1A -N800',
+        line         = '1',
+        noDoc        = '60MK-0K1A-100-B00',
+        tglBerlaku   = '18-Mar-24',
+    ),
+    'CYL COMP_K1AL L2': dict(
+        unitProduksi = 'MACHINING CYLINDER COMP',
+        namaPart     = 'CYLINDER COMP (K1AL)',
+        noPart       = '12100-K1A -N800',
+        line         = '2',
+        noDoc        = '60MK-0K1A-100-B00',
+        tglBerlaku   = '18-Mar-24',
+    ),
+    'CYL COMP_K1AL L3': dict(
+        unitProduksi = 'MACHINING CYLINDER COMP',
+        namaPart     = 'CYLINDER COMP (K1AL)',
+        noPart       = '12100-K1A -N800',
+        line         = '3',
+        noDoc        = '60MK-0K1A-100-B00',
+        tglBerlaku   = '18-Mar-24',
     ),
     # Tambahkan kombinasi Part+Model lain di sini ↓
+    # TODO: 'CRCS L_K2VJ', 'CRCS R_K2VJ', 'CYL COMP_K2VJ' — isi kalau data K2VJ ada
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -562,8 +620,10 @@ def _load_ilustrasi_b64(model: str) -> str:
 def _load_ilustrasi(report: dict) -> None:
     """Patch report['ilustrasi_img'] jika belum ada."""
     if not report.get('ilustrasi_img'):
-        model = report.get('header', {}).get('modelName', '')
-        report['ilustrasi_img'] = _load_ilustrasi_b64(model)
+        h          = report.get('header', {})
+        model      = h.get('modelName', '')
+        part_name  = h.get('partName', h.get('namaPart', ''))
+        report['ilustrasi_img'] = _get_ilustrasi_b64(model, part_name)
 
 def today_str():
     d = datetime.now()
@@ -669,8 +729,8 @@ def build_report_from_csv(df: pd.DataFrame, model: str, date_str: str, shift: in
         **_part_cfg,                       # override per part+model dari HDR_CONFIG
         'tanggal':   tanggal_fmt,
         'shift':     str(shift),
-        'partName':  str(first['PartName']),
-        'namaPart':  _part_name,            # langsung dari PartName CSV
+        'partName':  str(first['PartName']),  # PartName mentah dari CSV (untuk lookup)
+        'namaPart':  _part_cfg.get('namaPart', _part_name),  # prefer HDR_CONFIG, fallback CSV
         'modelName': model,
     }
 
@@ -786,66 +846,101 @@ def build_report_from_csv(df: pd.DataFrame, model: str, date_str: str, shift: in
 
 _ASSETS_DIR = _Path(__file__).resolve().parent.parent / "assets" / "ilustrasi"
 
+# ── Sama persis dengan _IMG_MAP di descriptive.py ─────────────────────────
 _ILUSTRASI_MAP: dict[str, str] = {
-    "K2VJ_CYL_COMP":   "K2VJ.png",
-    "K60_CRCS_L":      "K60.png",
-    "K2SA_CYL_COMP":   "K2SA.png",
-    "K1AL_L1_CRCS_L":  "K1AL_L1.jpg",
-    "K1AL_L1_CRCS_R":  "K1AL_L1_R.jpg",
-    "K1AL_L2_CRCS_L":  "K1AL_L2.jpg",
-    "K1AL_L2_CRCS_R":  "K1AL_L2_R.jpg",
-    "K1AL_L3_CRCS_L":  "K1AL_L3.jpg",
-    "K1AL_L3_CRCS_R":  "K1AL_L3_R.jpg",
-    "K2SA_CRCS_L":     "K2SA_CRCS_L.jpg",
-    "K2SA_CRCS_R":     "K2SA_CRCS_R.jpg",
-    "K60_CRCS_R":      "K60_R.jpg",
-    "K60_MISSION":     "K60_MISSION.jpg",
-    # ── CYL COMP (placeholder — isi filename saat file tersedia) ─────────────
-    "K1AL_CYL_COMP":           "K1AL_CYL_COMP.jpg",       # TODO: sediakan file
-    "K2V_CYL_COMP":            "K2V.png",        # TODO: sediakan file
-    # K2SA_CYL_COMP sudah ada di atas
-    # ── HOLDER WATER PUMP ────────────────────────────────────────────────────
-    "K60_HOLDER_WATER_PUMP":   "K60_WP.jpg",  # TODO: sediakan file
-    # ── CYL HEAD — K60 ───────────────────────────────────────────────────────
-    "K60_CYL_HEAD_GV":         "K60_GV.jpg",     # TODO: sediakan file
-    "K60_CYL_HEAD_CAM":        "K60_CAM.jpg",    # TODO: sediakan file
-    "K60_CYL_HEAD_NT":         "K60_NT.jpg",     # TODO: sediakan file
-    "K60_CYL_HEAD_ROUGH":      "K60_ROUGH.jpg",  # TODO: sediakan file
-    # ── CYL HEAD — K2SA ──────────────────────────────────────────────────────
-    "K2SA_CYL_HEAD_GV":        "K2SA_GV.jpg",    # TODO: sediakan file
-    "K2SA_CYL_HEAD_CAM":       "K2SA.jpg",   # TODO: sediakan file
-    "K2SA_CYL_HEAD_NT":        "K2SA_NT.jpg",    # TODO: sediakan file
-    "K2SA_CYL_HEAD_ROUGH":     "K2SA_ROUGH.jpg", # TODO: sediakan file
-    # ── CYL HEAD — K1AL ──────────────────────────────────────────────────────
-    "K1AL_CYL_HEAD_GV":        "K1AL_GV.jpg",    # TODO: sediakan file
-    "K1AL_L2_CYL_HEAD_CAM":    "K1AL_CAM.jpg", # TODO: sediakan file
-    "K1AL_L2_CYL_HEAD_NT":     "K1AL_NT.jpg",  # TODO: sediakan file
-    "K1AL_L3_CYL_HEAD_CAM":    "K1AL_CAM.jpg", # TODO: sediakan file
-    "K1AL_L3_CYL_HEAD_NT":     "K1AL_NT.jpg",  # TODO: sediakan file
-    "K1AL_CYL_HEAD_ROUGH":     "K1AL_ROUGH.jpg", # TODO: sediakan file
+    "K2VJ_CYL_COMP":    "K2VJ.png",
+    "K2V_CYL_COMP":     "K2V.png",
+    "K60_CRCS_L":       "K60.png",
+    "K2SA_CYL_COMP":    "K2SA_CYLCOMP.jpg",
+    "K1AL_L1_CRCS_L":   "K1AL_L1.jpg",
+    "K1AL_L1_CRCS_R":   "K1AL_L1_R.jpg",
+    "K1AL_L2_CRCS_L":   "K1AL_L2.jpg",
+    "K1AL_L2_CRCS_R":   "K1AL_L2_R.jpg",
+    "K1AL_L3_CRCS_L":   "K1AL_L3.jpg",
+    "K1AL_L3_CRCS_R":   "K1AL_L3_R.jpg",
+    "K2SA_CRCS_L":      "K2SA_CRCS_L.jpg",
+    "K2SA_CRCS_R":      "K2SA_CRCS_R.jpg",
+    "K60_CRCS_R":       "K60_R.jpg",
+    "K60_MISSION":      "K60_MISSION.jpg",
+    "K1AL_CYL_COMP":    "K1AL_CYLCOMP.jpg",
+    "K60_GV":           "K60_GV.jpg",
+    "K2SA_GV":          "K2SA_GV.jpg",
+    "K1AL_GV":          "K1AL_GV.jpg",
+    "K60_CAM":          "K60_CAM.jpg",
+    "K2SA_CAM":         "K2SA_CAM.jpg",
+    "K1AL_L2_CAM":      "K1AL_CAM.jpg",
+    "K1AL_L3_CAM":      "K1AL_CAM.jpg",
+    "K60_NT":           "K60_NT.jpg",
+    "K2SA_NT":          "K2SA_NT.jpg",
+    "K1AL_L2_NT":       "K1AL_NT.jpg",
+    "K1AL_L3_NT":       "K1AL_NT.jpg",
+    "K60_ROUGH":        "K60_ROUGH.jpg",
+    "K2SA_ROUGH":       "K2SA_ROUGH.jpg",
+    "K1AL_ROUGH":       "K1AL_ROUGH.jpg",
+    "K60_HWP":          "K60_WP.jpg",
 }
 
 _ILUSTRASI_B64_CACHE: dict[str, str] = {}
 
+def _detect_ilustrasi_key(part: str, model: str) -> str:
+    """
+    Deteksi active_key untuk ilustrasi — IDENTIK dengan _detect_active_key
+    di descriptive.py agar file yang diload selalu sama.
+    """
+    p, m = part.lower(), model.lower()
+    # CRCS
+    if "k2vj" in m and "cyl comp" in p:       return "K2VJ_CYL_COMP"
+    if "k60"  in m and "crcs l"   in p:       return "K60_CRCS_L"
+    if "k60"  in m and "crcs r"   in p:       return "K60_CRCS_R"
+    if "k60"  in m and "mission"  in p:       return "K60_MISSION"
+    if "k2sa" in m and "crcs l"   in p:       return "K2SA_CRCS_L"
+    if "k2sa" in m and "crcs r"   in p:       return "K2SA_CRCS_R"
+    if "k1al l1" in m and "crcs l" in p:      return "K1AL_L1_CRCS_L"
+    if "k1al l1" in m and "crcs r" in p:      return "K1AL_L1_CRCS_R"
+    if "k1al l2" in m and "crcs l" in p:      return "K1AL_L2_CRCS_L"
+    if "k1al l2" in m and "crcs r" in p:      return "K1AL_L2_CRCS_R"
+    if "k1al l3" in m and "crcs l" in p:      return "K1AL_L3_CRCS_L"
+    if "k1al l3" in m and "crcs r" in p:      return "K1AL_L3_CRCS_R"
+    # CYL COMP
+    if "k2sa" in m and "cyl comp" in p:       return "K2SA_CYL_COMP"
+    if "k1al" in m and "cyl comp" in p:       return "K1AL_CYL_COMP"
+    if "k2v"  in m and "cyl comp" in p:       return "K2V_CYL_COMP"
+    # CYL HEAD GV
+    if "k60"  in m and "gv" in p:            return "K60_GV"
+    if "k2sa" in m and "gv" in p:            return "K2SA_GV"
+    if "k1al" in m and "gv" in p:            return "K1AL_GV"
+    # CYL HEAD CAM
+    if "k60"     in m and "cam" in p:         return "K60_CAM"
+    if "k2sa"    in m and "cam" in p:         return "K2SA_CAM"
+    if "k1al l2" in m and "cam" in p:         return "K1AL_L2_CAM"
+    if "k1al l3" in m and "cam" in p:         return "K1AL_L3_CAM"
+    # CYL HEAD NT
+    if "k60"     in m and "nt" in p:          return "K60_NT"
+    if "k2sa"    in m and "nt" in p:          return "K2SA_NT"
+    if "k1al l2" in m and "nt" in p:          return "K1AL_L2_NT"
+    if "k1al l3" in m and "nt" in p:          return "K1AL_L3_NT"
+    # CYL HEAD ROUGH
+    if "k60"  in m and "rough" in p:          return "K60_ROUGH"
+    if "k2sa" in m and "rough" in p:          return "K2SA_ROUGH"
+    if "k1al" in m and "rough" in p:          return "K1AL_ROUGH"
+    # HOLDER WATER PUMP
+    if "k60"  in m and "water pump" in p:     return "K60_HWP"
+    return ""
+
 def _get_ilustrasi_b64(model: str, part_name: str) -> str:
-    """Cari ilustrasi berdasarkan key '{MODEL}_{PART}' (sama dengan descriptive.py)."""
-    key = f"{model}_{part_name}".replace(' ', '_').upper()
-
-    # Cari key yang paling panjang cocok (spesifik ke umum)
-    matched_file = ''
-    best_len = 0
-    for map_key, fname in _ILUSTRASI_MAP.items():
-        mk = map_key.upper()
-        if key.startswith(mk) and len(mk) > best_len:
-            matched_file = fname
-            best_len = len(mk)
-
-    if not matched_file:
+    """Cari ilustrasi — pakai key system yang sama dengan descriptive.py."""
+    active_key = _detect_ilustrasi_key(part_name, model)
+    if not active_key:
         return ''
-    if matched_file in _ILUSTRASI_B64_CACHE:
-        return _ILUSTRASI_B64_CACHE[matched_file]
 
-    img_path = _ASSETS_DIR / matched_file
+    fname = _ILUSTRASI_MAP.get(active_key, '')
+    if not fname:
+        return ''
+
+    if fname in _ILUSTRASI_B64_CACHE:
+        return _ILUSTRASI_B64_CACHE[fname]
+
+    img_path = _ASSETS_DIR / fname
     if not img_path.exists():
         return ''
 
@@ -853,7 +948,7 @@ def _get_ilustrasi_b64(model: str, part_name: str) -> str:
     ext    = img_path.suffix.lower()
     mime   = 'image/png' if ext == '.png' else 'image/jpeg'
     result = f'data:{mime};base64,{base64.b64encode(img_path.read_bytes()).decode()}'
-    _ILUSTRASI_B64_CACHE[matched_file] = result
+    _ILUSTRASI_B64_CACHE[fname] = result
     return result
 
 
@@ -863,9 +958,27 @@ def build_report_html(report) -> str:
     m = report['measurements']
     illustration = report.get('illustration', '')  # base64 image or empty
 
-    # Build illustration HTML
+    # Pre-load confidential image DULU biar bisa dipakai di stamp area
+    import base64 as _b64_rpt
+    from pathlib import Path as _rpt_path
+    _conf_img_html = ""
+    for _conf_fname in ["confidential.png", "confidential.jpg", "CONFIDENTIAL.png", "CONFIDENTIAL.jpg"]:
+        _conf_path = _rpt_path("assets") / _conf_fname
+        if _conf_path.exists():
+            _conf_ext  = _conf_path.suffix.lower()
+            _conf_mime = "image/png" if _conf_ext == ".png" else "image/jpeg"
+            _conf_b64  = _b64_rpt.b64encode(_conf_path.read_bytes()).decode()
+            _conf_img_html = (
+                f'<img src="data:{_conf_mime};base64,{_conf_b64}" '
+                f'style="max-height:72px;max-width:100%;object-fit:contain;display:block;margin:0 auto;" />'
+            )
+            break
+
+    # Build illustration HTML — tampil di area stamp (logo/stamp) di header
     if illustration:
         illustration_html = f'<img src="data:image/png;base64,{illustration}" style="max-width:100%; max-height:80px; object-fit:contain;" />'
+    elif _conf_img_html:
+        illustration_html = _conf_img_html   # ← gambar confidential masuk ke stamp area
     else:
         illustration_html = '<div style="font-size:8px; color:#bbb; margin-top:20px;">(logo/stamp)</div>'
 
@@ -1007,6 +1120,16 @@ def build_report_html(report) -> str:
     </script>
     '''
 
+    # Pre-compute logo AHM sebagai base64
+    _logo_rpt = ""
+    _logo_svg = _rpt_path("assets/Logo_AHM.svg")
+    if _logo_svg.exists():
+        _logo_rpt = "data:image/svg+xml;base64," + _b64_rpt.b64encode(_logo_svg.read_bytes()).decode()
+    _logo_cell = (f'<img src="{_logo_rpt}" style="max-height:44px;max-width:100%;width:auto;object-fit:contain;display:block;margin:0 auto;" />'
+                  if _logo_rpt else
+                  '<div style="color:#cc0000;font-weight:900;font-size:28px;letter-spacing:2px;">AHM</div>'
+                  '<div style="font-size:10px;color:#333;font-weight:700;">PT Astra Honda Motor</div>')
+
     html = f'''
     <!DOCTYPE html>
     <html>
@@ -1019,7 +1142,10 @@ def build_report_html(report) -> str:
         input:focus {{ border-color:#1a4080 !important; box-shadow:0 0 0 2px rgba(26,64,128,.2); }}
         @media print {{
             .no-print {{ display:none !important; }}
-            body {{ background:white; }}
+            body {{ background:white; -webkit-print-color-adjust:exact; print-color-adjust:exact; }}
+            img {{ max-width:100% !important; }}
+            thead {{ display:table-header-group; }}
+            tr {{ page-break-inside:avoid; }}
         }}
     </style>
     </head>
@@ -1033,8 +1159,7 @@ def build_report_html(report) -> str:
 
       <tr>
         <td colspan="3" rowspan="2" style="text-align:center; padding:10px 4px; border:1px solid #333; vertical-align:middle;">
-          <div style="color:#cc0000; font-weight:900; font-size:28px; letter-spacing:2px; line-height:1;">AHM</div>
-          <div style="font-size:10px; color:#333; font-weight:700; margin-top:2px;">PT Astra Honda Motor</div>
+          {_logo_cell}
         </td>
         <td colspan="4" rowspan="3" style="text-align:center; font-weight:900; font-size:16px; letter-spacing:0.5px; padding:7px 4px; border:1px solid #333; vertical-align:middle;">
           WORK STATION INSPECTION RESULT DATA QCL
@@ -1058,7 +1183,8 @@ def build_report_html(report) -> str:
       <tr>
         <td colspan="2" style="padding:3px 5px; border:1px solid #333; font-size:9px; font-weight:bold; white-space:nowrap;">UNIT PRODUKSI</td>
         <td colspan="2" style="padding:3px 5px; border:1px solid #333; font-size:10px; font-weight:bold;">: {h.get('unitProduksi','')}</td>
-        <td colspan="3" style="padding:3px 5px; border:1px solid #333; font-size:11px; font-weight:900; background:#FFFF00; color:#000; text-align:center; letter-spacing:1px;">CONFIDENTIAL STATUS</td>
+        <td colspan="2" style="padding:3px 5px; border:1px solid #333; font-size:11px; font-weight:900; background:#FFFF00; color:#000; text-align:center; letter-spacing:1px;">CONFIDENTIAL STATUS</td>
+        <td colspan="1" style="border:1px solid #333;"></td>
         <td colspan="1" style="padding:3px 4px; border:1px solid #333; font-size:10px; font-weight:bold; text-align:center;">QCL 1</td>
         <td colspan="1" style="padding:3px 4px; border:1px solid #333; font-size:10px; font-weight:bold; text-align:center;">QCL 2</td>
         <td colspan="1" style="padding:3px 4px; border:1px solid #333; font-size:10px; font-weight:bold; text-align:center;">QCL 3</td>
@@ -2167,7 +2293,9 @@ setTimeout(function(){
             _html_v = self._get_html_cached(r)
         if st.session_state.get('_print_rpt') == r['id']:
             st.session_state.pop('_print_rpt', None)
-            _html_v += '<script>setTimeout(function(){window.print();},350);</script>'
+            import time as _t
+            _nonce = int(_t.time() * 1000)  # unik tiap klik → paksa re-render
+            _html_v += f'<script>/* print:{_nonce} */setTimeout(function(){{window.print();}},350);</script>'
         components.html(_html_v, height=html_h, scrolling=True)
 
     # ── INTERNAL ───────────────────────────────────────────────────────────
