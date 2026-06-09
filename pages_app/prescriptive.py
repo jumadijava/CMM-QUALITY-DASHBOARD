@@ -90,66 +90,139 @@ class PrescriptivePage:
         # Pastikan kolom date bisa diparse
         df_rc["_date_dt"] = pd.to_datetime(df_rc["date"], format="%d %b %Y", errors="coerce")
 
-        # ── Filter bar Row 1: Waktu + Kategori ───────────────────
-        r1c1, r1c2, r1c3 = st.columns([2, 2, 1], gap="small")
-        with r1c1:
-            time_opts = ["Today", "7 Hari", "30 Hari", "Semua", "Custom"]
-            f_time = st.pills("Waktu", time_opts, default="30 Hari",
-                              key="presc_time", selection_mode="single",
-                              label_visibility="collapsed") or "30 Hari"
-
-        # Custom date picker — muncul kalau pilih Custom
         from datetime import timedelta as _td
         _now = pd.Timestamp.now()
+
+        # ── BARIS 1: Periode | Status | Kategori | KP ────────────
+        col_r1 = st.columns([1.6, 1.4, 1.4, 1.2], gap="small")
+
+        with col_r1[0]:
+            time_opts = ["Semua Periode", "Hari Ini", "7 Hari Terakhir", "30 Hari Terakhir", "Custom"]
+            f_time = st.selectbox("📅 Periode", time_opts,
+                                  key="presc_time", label_visibility="visible")
+
+        with col_r1[1]:
+            status_opts = ["Semua Status", "Open", "Investigated", "Resolved"]
+            if st.session_state.get("presc_status") not in status_opts:
+                st.session_state["presc_status"] = "Semua Status"
+            f_status = st.selectbox("🔖 Status RC", status_opts,
+                                    key="presc_status", label_visibility="visible")
+
+        with col_r1[2]:
+            cat_filter_opts = ["Semua Kategori", "Produksi", "QIS"]
+            if st.session_state.get("presc_cat_filter") not in cat_filter_opts:
+                st.session_state["presc_cat_filter"] = "Produksi"
+            f_cat_filter = st.selectbox("🏷 Kategori", cat_filter_opts,
+                                        key="presc_cat_filter", label_visibility="visible")
+
+        with col_r1[3]:
+            kp_opts = ["Semua Titik", "KP Only"]
+            if st.session_state.get("presc_kp") not in kp_opts:
+                st.session_state["presc_kp"] = "Semua Titik"
+            f_kp = st.selectbox("⚠ Kritikal Point", kp_opts,
+                                key="presc_kp", label_visibility="visible")
+
+        # ── Apply filter waktu ke df_f_base ──────────────────────
         if f_time == "Custom":
-            cd1, cd2 = st.columns(2, gap="small")
-            with cd1:
-                d1 = st.date_input("Dari", value=_now.date() - _td(days=30),
-                                   key="presc_d1", label_visibility="visible")
-            with cd2:
-                d2 = st.date_input("Sampai", value=_now.date(),
-                                   key="presc_d2", label_visibility="visible")
-        with r1c2:
-            f_cat_filter = st.pills("Kategori Root Cause", ["Produksi", "QIS", "Semua"],
-                                    default="Produksi",
-                                    key="presc_cat_filter", selection_mode="single",
-                                    label_visibility="collapsed") or "Produksi"
-        with r1c3:
-            f_status = st.pills("Status", ["Semua", "Open", "Investigated", "Resolved"],
-                                default="Semua", key="presc_status",
-                                selection_mode="single",
-                                label_visibility="collapsed") or "Semua"
+            from datetime import timedelta as _td2
+            _cd1, _cd2 = st.columns(2, gap="small")
+            with _cd1:
+                d_from = st.date_input("Dari", value=(_now - _td(days=30)).date(),
+                                       key="presc_d1", label_visibility="visible")
+            with _cd2:
+                d_to = st.date_input("Sampai", value=_now.date(),
+                                     key="presc_d2", label_visibility="visible")
 
-        # ── Filter bar Row 2: Part + Model ───────────────────────
-        r2c1, r2c2 = st.columns(2, gap="small")
-        with r2c1:
-            parts = ["Semua Part"] + sorted(df_rc["part"].dropna().unique().tolist())
-            f_part = st.pills("Part", parts, default="Semua Part",
-                              key="presc_part", selection_mode="single",
-                              label_visibility="collapsed") or "Semua Part"
-        with r2c2:
-            if f_part != "Semua Part":
-                models = ["Semua Model"] + sorted(df_rc[df_rc["part"]==f_part]["model"].dropna().unique().tolist())
-            else:
-                models = ["Semua Model"] + sorted(df_rc["model"].dropna().unique().tolist())
-            f_model = st.pills("Model", models, default="Semua Model",
-                               key=f"presc_model_{f_part}", selection_mode="single",
-                               label_visibility="collapsed") or "Semua Model"
-
-        # Apply filter waktu
-        df_f = df_rc.copy()
-        if f_time == "Today":
-            df_f = df_f[df_f["_date_dt"].dt.date == _now.date()]
-        elif f_time == "7 Hari":
-            df_f = df_f[df_f["_date_dt"] >= _now - _td(days=7)]
-        elif f_time == "30 Hari":
-            df_f = df_f[df_f["_date_dt"] >= _now - _td(days=30)]
+        df_f_base = df_rc.copy()
+        if f_time == "Hari Ini":
+            df_f_base = df_f_base[df_f_base["_date_dt"].dt.date == _now.date()]
+        elif f_time == "7 Hari Terakhir":
+            df_f_base = df_f_base[df_f_base["_date_dt"] >= _now - _td(days=6)]
+        elif f_time == "30 Hari Terakhir":
+            df_f_base = df_f_base[df_f_base["_date_dt"] >= _now - _td(days=29)]
         elif f_time == "Custom":
-            df_f = df_f[(df_f["_date_dt"].dt.date >= d1) & (df_f["_date_dt"].dt.date <= d2)]
+            df_f_base = df_f_base[
+                (df_f_base["_date_dt"].dt.date >= d_from) &
+                (df_f_base["_date_dt"].dt.date <= d_to)
+            ]
 
-        # Filter QIS/Produksi — dari kolom 'category' di CMM data via df_all
-        if f_cat_filter != "Semua" and "sampleno" in df_f.columns:
-            # Mapping QIS → Category="QIS" di RC pakai join dengan df_all
+        # ── BARIS 2: Part·Model | SampleNo | Ref | Parameter (cascade) ──
+        # Combo Part · Model dari df_rc
+        combos_df = (
+            df_rc[["part","model"]].dropna().drop_duplicates()
+            .sort_values(["part","model"])
+        )
+        combo_opts = ["— Semua Part & Model —"] + [
+            f"{r['part']} · {r['model']}" for _, r in combos_df.iterrows()
+        ]
+        if st.session_state.get("presc_combo") not in combo_opts:
+            st.session_state["presc_combo"] = "— Semua Part & Model —"
+
+        cur_combo = st.session_state.get("presc_combo", "— Semua Part & Model —")
+        df_after_combo = df_f_base.copy()
+        if cur_combo != "— Semua Part & Model —":
+            _sp = cur_combo.split(" · ", 1)
+            if len(_sp) == 2:
+                df_after_combo = df_f_base[
+                    (df_f_base["part"] == _sp[0]) & (df_f_base["model"] == _sp[1])
+                ]
+
+        # SampleNo cascade dari combo
+        sno_vals = sorted(
+            df_after_combo["sampleno"].dropna().astype(str).unique().tolist(),
+            key=lambda s: (0, int(s)) if s.isdigit() else (1, s)
+        ) if "sampleno" in df_after_combo.columns else []
+        sno_opts = ["Semua Sample"] + sno_vals
+        if st.session_state.get("presc_sno") not in sno_opts:
+            st.session_state["presc_sno"] = "Semua Sample"
+
+        cur_sno = st.session_state.get("presc_sno", "Semua Sample")
+        df_after_sno = df_after_combo.copy()
+        if cur_sno != "Semua Sample" and "sampleno" in df_after_sno.columns:
+            df_after_sno = df_after_combo[df_after_combo["sampleno"].astype(str) == cur_sno]
+
+        # Ref cascade dari sampleno
+        ref_vals = sorted([
+            r for r in df_after_sno["ref"].dropna().astype(str).unique()
+            if r.strip() not in ("", "-", "nan")
+        ]) if "ref" in df_after_sno.columns else []
+        ref_opts = ["Semua Ref / Point"] + ref_vals
+        if st.session_state.get("presc_ref") not in ref_opts:
+            st.session_state["presc_ref"] = "Semua Ref / Point"
+
+        cur_ref = st.session_state.get("presc_ref", "Semua Ref / Point")
+        df_after_ref = df_after_sno.copy()
+        if cur_ref != "Semua Ref / Point" and "ref" in df_after_ref.columns:
+            df_after_ref = df_after_sno[df_after_sno["ref"].astype(str) == cur_ref]
+
+        # Parameter cascade dari ref
+        param_vals = sorted([
+            p for p in df_after_ref["parameter"].dropna().astype(str).unique()
+            if p.strip() not in ("", "-", "nan")
+        ]) if "parameter" in df_after_ref.columns else []
+        param_opts = ["Semua Parameter"] + param_vals
+        if st.session_state.get("presc_param") not in param_opts:
+            st.session_state["presc_param"] = "Semua Parameter"
+
+        col_r2 = st.columns([2, 1, 1.2, 1.8], gap="small")
+        with col_r2[0]:
+            f_combo = st.selectbox("🔩 Part · Model", combo_opts,
+                                   key="presc_combo", label_visibility="visible")
+        with col_r2[1]:
+            f_sno = st.selectbox("🔢 Sample No", sno_opts,
+                                 key="presc_sno", label_visibility="visible")
+        with col_r2[2]:
+            f_ref = st.selectbox("📍 Ref / Point", ref_opts,
+                                 key="presc_ref", label_visibility="visible")
+        with col_r2[3]:
+            f_param = st.selectbox("📐 Parameter", param_opts,
+                                   key="presc_param", label_visibility="visible")
+
+        # ── Terapkan semua filter ─────────────────────────────────
+        df_f = df_f_base.copy()
+
+        # Filter Kategori (Produksi/QIS dari CMM data)
+        if f_cat_filter != "Semua Kategori":
             if not self.df_all.empty and "Category" in self.df_all.columns:
                 _cat_map = (self.df_all.groupby(["PartName","ModelName","ref","point"])["Category"]
                            .agg(lambda x: x.mode()[0] if len(x)>0 else "Produksi")
@@ -159,14 +232,43 @@ class PrescriptivePage:
                 df_f["_cmm_cat"] = df_f["_cmm_cat"].fillna("Produksi")
                 if f_cat_filter == "QIS":
                     df_f = df_f[df_f["_cmm_cat"] == "QIS"]
-                elif f_cat_filter == "Produksi":
+                else:
                     df_f = df_f[df_f["_cmm_cat"] == "Produksi"]
 
-        if f_part != "Semua Part":
-            df_f = df_f[df_f["part"] == f_part]
-        if f_model != "Semua Model":
-            df_f = df_f[df_f["model"] == f_model]
-        if f_status != "Semua":
+        # Filter KP — dari df_all
+        if f_kp == "KP Only" and not self.df_all.empty:
+            kp_keys = set(
+                self.df_all[self.df_all["KP"].astype(str).isin(["1","1.0","True"])]
+                [["PartName","ModelName","ref","point"]]
+                .drop_duplicates()
+                .apply(lambda r: (r["PartName"], r["ModelName"],
+                                  str(r["ref"]), str(r["point"])), axis=1)
+            ) if "KP" in self.df_all.columns else set()
+            df_f = df_f[df_f.apply(
+                lambda r: (r["part"], r["model"], str(r["ref"]), str(r["parameter"])) in kp_keys,
+                axis=1
+            )]
+
+        # Part · Model
+        if f_combo != "— Semua Part & Model —":
+            _sp = f_combo.split(" · ", 1)
+            if len(_sp) == 2:
+                df_f = df_f[(df_f["part"] == _sp[0]) & (df_f["model"] == _sp[1])]
+
+        # SampleNo
+        if f_sno != "Semua Sample" and "sampleno" in df_f.columns:
+            df_f = df_f[df_f["sampleno"].astype(str) == f_sno]
+
+        # Ref
+        if f_ref != "Semua Ref / Point" and "ref" in df_f.columns:
+            df_f = df_f[df_f["ref"].astype(str) == f_ref]
+
+        # Parameter
+        if f_param != "Semua Parameter" and "parameter" in df_f.columns:
+            df_f = df_f[df_f["parameter"].astype(str) == f_param]
+
+        # Status
+        if f_status != "Semua Status":
             df_f = df_f[df_f["status"] == f_status]
 
         if df_f.empty:
@@ -228,16 +330,23 @@ class PrescriptivePage:
 
         @st.cache_data(ttl=120, show_spinner=False)
         def _compute_scores(_df):
-            grp = _df.groupby(["part","model","ref","parameter"])
+            has_sno = "sampleno" in _df.columns
+            grp_cols = ["part","model","sampleno","ref","parameter"] if has_sno else ["part","model","ref","parameter"]
+            grp = _df.groupby(grp_cols)
             rows = []
-            for (part, model, ref, param), g in grp:
+            for keys, g in grp:
+                if has_sno:
+                    part, model, sno, ref, param = keys
+                else:
+                    part, model, ref, param = keys
+                    sno = "-"
                 n_ng  = len(g)
                 n_o   = int((g["status"]=="Open").sum())
                 n_i   = int((g["status"]=="Investigated").sum())
                 n_r   = int((g["status"]=="Resolved").sum())
                 score = n_ng*2 + n_o*3 + n_i*1
                 top_c = g["category"].value_counts().index[0] if len(g) else "-"
-                rows.append({"part":part,"model":model,"ref":ref,"parameter":param,
+                rows.append({"part":part,"model":model,"sampleno":sno,"ref":ref,"parameter":param,
                              "score":score,"n_ng":n_ng,"n_open":n_o,
                              "n_invest":n_i,"n_resolved":n_r,"top_cat":top_c})
             return pd.DataFrame(rows).sort_values("score", ascending=False)
@@ -245,10 +354,17 @@ class PrescriptivePage:
         df_score = _compute_scores(df_rc)
 
         if not df_f.empty:
-            f_refs = set(zip(df_f["part"],df_f["model"],df_f["ref"],df_f["parameter"]))
-            df_score = df_score[df_score.apply(
-                lambda r: (r["part"],r["model"],r["ref"],r["parameter"]) in f_refs, axis=1
-            )]
+            has_sno_f = "sampleno" in df_f.columns
+            if has_sno_f:
+                f_refs = set(zip(df_f["part"],df_f["model"],df_f["sampleno"],df_f["ref"],df_f["parameter"]))
+                df_score = df_score[df_score.apply(
+                    lambda r: (r["part"],r["model"],r["sampleno"],r["ref"],r["parameter"]) in f_refs, axis=1
+                )]
+            else:
+                f_refs = set(zip(df_f["part"],df_f["model"],df_f["ref"],df_f["parameter"]))
+                df_score = df_score[df_score.apply(
+                    lambda r: (r["part"],r["model"],r["ref"],r["parameter"]) in f_refs, axis=1
+                )]
 
         if df_score.empty:
             st.info("Tidak ada titik untuk ditampilkan.")
@@ -298,8 +414,9 @@ class PrescriptivePage:
         open_titik = st.session_state.get("presc_open_titik")
 
         for _, row in df_page.iterrows():
+            sno_val = str(row.get("sampleno", "-"))
             label   = f"{row['ref']} · {row['parameter']}"
-            tid     = f"{row['part']}_{row['model']}_{row['ref']}_{row['parameter']}"
+            tid     = f"{row['part']}_{row['model']}_{sno_val}_{row['ref']}_{row['parameter']}"
             p_lbl, p_fc, p_bg = _priority(row["score"])
             is_open = open_titik == tid
             border  = "#EF4444" if row["n_open"] > 0 else "#E2E8F0"
@@ -312,8 +429,9 @@ class PrescriptivePage:
                 f'<div>'
                 f'<div style="font-size:14px;font-weight:700;color:#0F172A;">{label}</div>'
                 f'<div style="font-size:11px;color:#64748B;margin-top:2px;">'
-                f'<b>{row["part"]} {row["model"]}</b> &nbsp;·&nbsp; '
-                f'{row["n_ng"]} NG &nbsp;·&nbsp; '
+                f'<b>{row["part"]} {row["model"]}</b>'
+                f' &nbsp;·&nbsp; No. Sample <b>{sno_val}</b>'
+                f' &nbsp;·&nbsp; {row["n_ng"]} NG &nbsp;·&nbsp; '
                 f'<span style="color:#DC2626;font-weight:600;">{row["n_open"]} Open</span>'
                 f' &nbsp;·&nbsp; Dominan: <b>{row["top_cat"]}</b></div>'
                 f'</div>'
@@ -349,25 +467,21 @@ class PrescriptivePage:
             top_cat    = cat_counts.index[0] if len(cat_counts) else "Lainnya"
             top_pct    = round(cat_counts.iloc[0]/len(df_titik)*100) if len(df_titik) else 0
 
-            # ── Insight shift ────────────────────────────────────
-            shift_counts = df_titik["shift"].value_counts() if "shift" in df_titik.columns else None
+            # ── Insight titik spesifik (bukan keseluruhan part+model) ──
+            shift_counts  = df_titik["shift"].value_counts() if "shift" in df_titik.columns else None
+            ref_str   = str(row["ref"])
+            param_str = str(row["parameter"])
             shift_insight = ""
             if shift_counts is not None and len(shift_counts) > 0:
-                top_shift = shift_counts.index[0]
-                top_shift_pct = round(shift_counts.iloc[0]/len(df_titik)*100)
+                top_shift     = shift_counts.index[0]
+                top_shift_pct = round(shift_counts.iloc[0] / len(df_titik) * 100)
                 shift_insight = f' · <b>Dominan di Shift {top_shift}</b> ({top_shift_pct}%)'
-
-            # ── Insight Part+Model spesifik ──────────────────────
-            pm_key = f"{row['part']} {row['model']}"
-            df_pm  = df_rc[(df_rc["part"]==row["part"]) & (df_rc["model"]==row["model"])]
-            pm_top_cat = df_pm["category"].value_counts().index[0] if len(df_pm) else top_cat
-            pm_top_pct = round(df_pm["category"].value_counts().iloc[0]/len(df_pm)*100) if len(df_pm) else top_pct
 
             st.markdown(
                 f'<div style="background:#F1F5F9;border-radius:8px;padding:8px 12px;'
                 f'margin-bottom:10px;font-size:11px;color:#475569;">'
-                f'<b>{pm_key}</b> — secara keseluruhan dominan: '
-                f'<b style="color:#0F172A;">{pm_top_cat}</b> ({pm_top_pct}%){shift_insight}'
+                f'<b>{ref_str} · {param_str}</b> — dominan penyebab: '
+                f'<b style="color:#0F172A;">{top_cat}</b> ({top_pct}%){shift_insight}'
                 f'</div>',
                 unsafe_allow_html=True
             )
@@ -612,17 +726,7 @@ class PrescriptivePage:
         # Sort notifs terbaru duluan
         notifs_sorted = sorted(notifs, key=lambda x: x.get("created_at",""), reverse=True)
 
-        # Filter
-        fc1, fc2 = st.columns([2,1], gap="small")
-        with fc1:
-            parts_h = ["Semua"] + sorted({n.get("part","") for n in notifs if n.get("part")})
-            fp = st.pills("Part", parts_h, default="Semua",
-                          key="hist_part", selection_mode="single",
-                          label_visibility="collapsed") or "Semua"
-        with fc2:
-            only_open = st.checkbox("Belum Ada Root Cause", key="hist_open", value=False)
-
-        st.markdown(f'<div style="font-size:11px;color:#64748B;margin:6px 0 10px;">{len(notifs_sorted)} alert tercatat</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:11px;color:#64748B;margin:0 0 10px;">{len(notifs_sorted)} alert tercatat</div>', unsafe_allow_html=True)
 
         for n in notifs_sorted[:50]:
             part  = n.get("part","")
@@ -633,9 +737,6 @@ class PrescriptivePage:
             dev   = n.get("deviation","")
             ts    = n.get("created_at","")[:16] if n.get("created_at") else "-"
             shift = n.get("shift","")
-
-            if fp != "Semua" and part != fp:
-                continue
 
             # Lookup saran
             key = (part, model, ref, param)
@@ -650,8 +751,6 @@ class PrescriptivePage:
 
             # Cek apakah sudah ada RC
             has_rc = key in rc_lookup
-            if only_open and has_rc:
-                continue
 
             badge_bg = "#DCFCE7" if has_rc else "#FEE2E2"
             badge_fc = "#16A34A" if has_rc else "#DC2626"
